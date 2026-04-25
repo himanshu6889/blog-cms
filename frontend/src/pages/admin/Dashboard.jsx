@@ -8,8 +8,19 @@ import {
 } from "react-icons/fa";
 
 export default function Dashboard() {
-  const posts =
-    JSON.parse(localStorage.getItem("posts")) || [];
+
+  const [posts, setPosts] = useState([]);
+
+useEffect(() => {
+  fetch("http://localhost:5000/api/posts")
+    .then((res) => res.json())
+    .then((data) => {
+      setPosts(data);
+    })
+    .catch((err) => console.error(err));
+}, []);
+  // const posts =
+  //   JSON.parse(localStorage.getItem("posts")) || [];
 
   const categories = [
     ...new Set(
@@ -38,11 +49,13 @@ export default function Dashboard() {
   const [draftCount,    setDraftCount]    = useState(0);
 
   useEffect(() => {
-    animateCounter(posts.length,      setPostCount);
-    animateCounter(categories.length, setCategoryCount);
-    animateCounter(thisMonthPosts,    setMonthCount);
-    animateCounter(drafts,            setDraftCount);
-  }, []);
+    if (posts.length > 0) {
+      animateCounter(posts.length, setPostCount);
+      animateCounter(categories.length, setCategoryCount);
+      animateCounter(thisMonthPosts, setMonthCount);
+      animateCounter(drafts, setDraftCount);
+    }
+  }, [posts]);
 
   const animateCounter = (target, setter) => {
     let current = 0;
@@ -135,11 +148,11 @@ export default function Dashboard() {
                         {post.title}
                       </h3>
                       <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                        {formatDate(post.createdAt)}
+                        {formatDate(post.created_at)}
                       </p>
                     </div>
                   </div>
-                  <Link to={`/blog/${post.id}`} className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                  <Link to={`/blog/${post.slug}`} className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
                     View
                   </Link>
                 </div>
