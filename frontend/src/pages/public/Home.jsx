@@ -1,11 +1,22 @@
 import { Link } from "react-router-dom";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function Home() {
-  const posts =
-    JSON.parse(localStorage.getItem("posts")) || [];
 
-  // NORMALIZE CATEGORY (🔥 FIX)
+  const [posts, setPosts] = useState([]);
+
+useEffect(() => {
+  fetch("http://localhost:5000/api/posts")
+    .then((res) => res.json())
+    .then((data) => {
+      setPosts(data);
+    })
+    .catch((err) => console.error(err));
+}, []);
+  // const posts =
+  //   JSON.parse(localStorage.getItem("posts")) || [];
+
+  // NORMALIZE CATEGORY 
   const formatCategory = (cat) => {
     if (!cat) return "General";
     return cat.charAt(0).toUpperCase() + cat.slice(1).toLowerCase();
@@ -13,14 +24,14 @@ export default function Home() {
 
   // SORT
   const sortedPosts = [...posts].sort(
-    (a, b) => b.createdAt - a.createdAt
+    (a, b) => new Date(b.created_at) - new Date(a.created_at)
   );
 
   // STATE
   const [search, setSearch] = useState("");
   const [activeCategory, setActiveCategory] = useState("All");
 
-  // GET CLEAN CATEGORIES (🔥 FIXED)
+  // GET CLEAN CATEGORIES
   const categories = [
     "All",
     ...new Set(
@@ -30,7 +41,7 @@ export default function Home() {
     )
   ];
 
-  // FILTER (🔥 FIXED)
+  // FILTER 
   const filteredPosts = sortedPosts.filter((post) => {
     const matchSearch =
       post.title
@@ -106,7 +117,7 @@ export default function Home() {
 
       {/* FEATURED */}
       {featured && (
-        <Link to={`/blog/${featured.id}`} className="group block mb-16">
+        <Link to={`/blog/${featured.slug}`} className="group block mb-16">
           <div className="rounded-3xl overflow-hidden border border-slate-200 dark:border-slate-700 bg-white dark:bg-slate-800 hover:shadow-xl dark:hover:shadow-slate-900 transition">
 
             <div className="relative">
@@ -140,7 +151,7 @@ export default function Home() {
               </p>
 
               <div className="flex justify-between mt-6 text-sm text-slate-500 dark:text-slate-400">
-                <span>{new Date(featured.createdAt).toLocaleDateString()}</span>
+                <span>{new Date(featured.created_at).toLocaleDateString()}</span>
                 <span>{getReadingTime(featured.content)} min read</span>
               </div>
             </div>
@@ -151,7 +162,7 @@ export default function Home() {
       {/* GRID */}
       <div className="grid md:grid-cols-2 gap-8">
         {rest.map((post) => (
-          <Link key={post.id} to={`/blog/${post.id}`} className="group block">
+          <Link key={post.id} to={`/blog/${post.slug}`} className="group block">
             <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-2xl overflow-hidden hover:shadow-lg dark:hover:shadow-slate-900 hover:-translate-y-1 transition h-full flex flex-col">
 
               {post.thumbnail ? (
@@ -182,7 +193,7 @@ export default function Home() {
                 </p>
 
                 <div className="flex justify-between mt-4 text-xs text-slate-400 dark:text-slate-500">
-                  <span>{new Date(post.createdAt).toLocaleDateString()}</span>
+                  <span>{new Date(post.created_at).toLocaleDateString()}</span>
                   <span>{getReadingTime(post.content)} min read</span>
                 </div>
               </div>
