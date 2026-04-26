@@ -17,6 +17,9 @@ import ForgotPassword from "./pages/admin/ForgotPassword";
 import AuthRedirect from "./components/AuthRedirect";
 import ProtectedRoute from "./components/ProtectedRoute";
 
+import Signup from "./pages/admin/Signup";
+
+
 const router = createBrowserRouter([
   /* START PAGE */
   {
@@ -72,6 +75,12 @@ const router = createBrowserRouter([
   {
     path: "/login",
     element: <Login />
+  },
+
+  /* SIGNUP */
+  {
+    path: "/signup",
+    element: <Signup />
   },
 
   /* FORGOT PASSWORD */
