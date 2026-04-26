@@ -7,15 +7,25 @@ export default function EditPost() {
   const { slug } = useParams();
 
   const [currentPost, setCurrentPost] = useState(null);
-  const [isFetching, setIsFetching] = useState(true); // ✅ track fetch status separately
+  const [isFetching, setIsFetching] = useState(true); //  track fetch status separately
 
-  // ✅ Fetch the post
+  // Fetch the post
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setIsFetching(true);
-        const res = await fetch("http://localhost:5000/api/posts");
+        const res = await fetch("http://localhost:5000/api/posts", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+
         const data = await res.json();
+        if (!Array.isArray(data)) {
+          console.error("Invalid API response:", data);
+          setCurrentPost(null);
+          return;
+        }
         const found = data.find((p) => p.slug === slug);
         setCurrentPost(found || null);
       } catch (err) {
@@ -143,20 +153,32 @@ export default function EditPost() {
     if (!title.trim()) return;
     try {
       setLoading(true);
-      await fetch(`http://localhost:5000/api/posts/${currentPost.id}`, {
+      const res = await fetch(`http://localhost:5000/api/posts/${currentPost.id}`, {
         method: "PUT",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
         body: JSON.stringify({ title, category, description, content }),
       });
-      localStorage.removeItem(draftKey);
-      setShowSuccess(true);
-      setTimeout(() => navigate("/admin/posts"), 1000);
-    } catch (err) {
-      console.error("Update error:", err);
-    } finally {
-      setLoading(false);
-    }
-  };
+
+      const data = await res.json();
+
+      if (!res.ok) {
+          console.error("Update failed:", data);
+          alert(data.error || "Update failed");
+          return;
+        }
+
+        localStorage.removeItem(draftKey);
+        setShowSuccess(true);
+        setTimeout(() => navigate("/admin/posts"), 1000);
+      } catch (err) {
+        console.error("Update error:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
 
   const hasUnsavedChanges =
     title !== initialState.title ||

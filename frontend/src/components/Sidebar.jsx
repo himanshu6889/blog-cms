@@ -16,11 +16,10 @@ export default function Sidebar({ pinned, setPinned }) {
   // expanded when pinned OR when hovering the nav/body area (NOT the header)
   const expanded = pinned || hovered;
 
-  const isAdminLoggedIn =
-    localStorage.getItem("isAdminLoggedIn") === "true";
+  const isLoggedIn = !!localStorage.getItem("token");
 
   const handleLogout = () => {
-    localStorage.removeItem("isAdminLoggedIn");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 
@@ -88,14 +87,14 @@ export default function Sidebar({ pinned, setPinned }) {
         onMouseEnter={() => setHovered(true)}
         className="mt-auto space-y-3 pt-3"
       >
-        {expanded && isAdminLoggedIn && (
+        {expanded && isLoggedIn && (
           <div className="rounded-2xl border border-slate-800 bg-white/5 backdrop-blur-sm p-4">
             <p className="text-sm font-semibold text-white">Administrator</p>
             <p className="text-xs text-slate-400 mt-1">Secure session active</p>
           </div>
         )}
 
-        {isAdminLoggedIn && (
+        {isLoggedIn && (
           <button
             onClick={handleLogout}
             className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all duration-300 shadow-lg shadow-red-600/20"

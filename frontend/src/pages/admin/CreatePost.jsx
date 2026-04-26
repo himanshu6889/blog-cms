@@ -358,29 +358,31 @@ export default function CreatePost() {
   const [draftBanner, setDraftBanner] = useState(false);
   const [draftTimestamp, setDraftTimestamp] = useState("");
 
-  // useEffect(() => {
-  //   const stored = JSON.parse(localStorage.getItem("posts")) || [];
-  //   setExistingPosts(stored);
-  //   const raw = localStorage.getItem(DRAFT_KEY);
-  //   if (raw) {
-  //     try {
-  //       const d = JSON.parse(raw);
-  //       if (d.title || d.description || d.content) { setDraftBanner(true); setDraftTimestamp(d._savedAt || ""); }
-  //     } catch { localStorage.removeItem(DRAFT_KEY); }
-  //   }
-  // }, []);
-
   useEffect(() => {
-  const fetchPosts = async () => {
-    try {
-      const res = await fetch("http://localhost:5000/api/posts");
-      const data = await res.json();
-      setExistingPosts(data);
-    } catch (err) {
-      console.error("Error loading posts:", err);
-    }
-  };
+    const fetchPosts = async () => {
+      try {
+        const res = await fetch("http://localhost:5000/api/posts", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
+        const data = await res.json();
+        console.log("Existing Posts API:", data);
 
+  //  Ensure array
+
+  if (Array.isArray(data)) {
+      setExistingPosts(data);
+    } else {
+      setExistingPosts([]); // fallback to avoid crash
+    }
+
+  } catch (err) {
+    console.error("Error loading posts:", err);
+    setExistingPosts([]);
+  }
+};
+  
   fetchPosts();
 
   // draft logic (keep this)
@@ -485,12 +487,12 @@ export default function CreatePost() {
     const res = await fetch("http://localhost:5000/api/posts", {
       method: "POST",
       headers: {
-        "Content-Type": "application/json",
+        "Content-Type": "application/json",Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify(postData),
     });
 
-    // ✅ IMPORTANT CHECK
+    //  IMPORTANT CHECK
     if (!res.ok) {
       const error = await res.json();
       console.error("❌ Backend error:", error);
@@ -512,14 +514,22 @@ export default function CreatePost() {
     console.error("❌ Error creating post:", err);
   }
 };
-  // const handlePublish = () => { persistPost(); setShowPublishModal(false); showSuccessToast("Post Published", "Redirecting..."); resetAll(); setTimeout(() => navigate("/admin/posts"), 1500); };
+  
   const handleSave = async () => {
   await handlePublish();
 };
-  // const handleSave = () => { persistPost(); navigate("/admin/posts"); };
-  const handleCancel = () => { resetAll(); navigate("/admin/posts"); };
+  
 
-  const parentOptions = [{ value: "none", label: "(no parent)" }, ...existingPosts.map((p) => ({ value: p.slug, label: p.title }))];
+  const safePosts = Array.isArray(existingPosts) ? existingPosts : [];
+
+const parentOptions = [
+  { value: "none", label: "(no parent)" },
+  ...safePosts.map((p) => ({
+    value: p.slug,
+    label: p.title,
+  })),
+];
+
   const setAccessField = (key, val) => setAccess((prev) => ({ ...prev, [key]: val }));
 
   return (

@@ -6,23 +6,30 @@ export default function BlogDetails() {
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
-  const [loading, setLoading] = useState(true); // ✅ loading state added
+  const [loading, setLoading] = useState(true); // loading state added
 
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setLoading(true);
-        const res = await fetch("http://localhost:5000/api/posts");
+        const res = await fetch("http://localhost:5000/api/posts", {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
+        });
         const data = await res.json();
+        if (!Array.isArray(data)) {
+          console.error("Invalid API response:", data);
+          setPost(null);
+          return;
+        }
 
-        console.log("Fetched posts:", data); // ✅ log fetched data 
+        console.log("Fetched posts:", data); // log fetched data 
 
-        const found = data.find(
-          (p) => {
-            console.log(`Checking post: ${p.slug} (ID: ${p.id}) against slug param: ${slug}`); // ✅ log each check
-            return String(p.slug) === String(slug) || String(p.id) === String(slug)
-          }
-        );
+        const found = data.find((p) => {
+          console.log(`Checking post: ${p.slug} against slug param: ${slug}`);
+          return String(p.slug) === String(slug);
+        });
 
         setPost(found || null);
 
@@ -35,7 +42,7 @@ export default function BlogDetails() {
       } catch (err) {
         console.error("Error loading post:", err);
       } finally {
-        setLoading(false); // ✅ only mark done after fetch completes
+        setLoading(false); // only mark done after fetch completes
       }
     };
 

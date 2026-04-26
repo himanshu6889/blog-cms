@@ -8,7 +8,7 @@
 
   export default function Posts() {
     const [posts, setPosts] = useState([]);
-    // const [posts, setPosts] = useState(JSON.parse(localStorage.getItem("posts")) || []);
+    const safePosts = Array.isArray(posts) ? posts : [];
     const [search, setSearch] = useState("");
     const [selected, setSelected] = useState([]);
     const [sortBy, setSortBy] = useState("newest");
@@ -17,18 +17,38 @@
     const [showToast, setShowToast] = useState(false);
 
     useEffect(() => {
-    const fetchPosts = async () => {
-      try {
-        const res = await fetch("http://localhost:5000/api/posts");
-        const data = await res.json();
-        setPosts(data);
-      } catch (err) {
-        console.error("Error fetching posts:", err);
-      }
-    };
+      const fetchPosts = async () => {
+        try {
+          const res = await fetch("http://localhost:5000/api/posts", {
+            headers: {
+              Authorization: `Bearer ${localStorage.getItem("token")}`,
+            },
+          });
+          const data = await res.json();
+          if (Array.isArray(data)) {
+            setPosts(data);
+          } else {
+            setPosts([]);
+          }
+          
+          console.log("Posts API:", data); // Debug log
 
-    fetchPosts();
-  }, []);
+      //  Always ensure array
+
+      if (Array.isArray(data)) {
+        setPosts(data);
+      } else {
+        setPosts([]);
+      }
+
+    } catch (err) {
+      console.error("Error fetching posts:", err);
+      setPosts([]);
+    }
+  };
+
+  fetchPosts();
+}, []);
 
 
 
@@ -44,16 +64,22 @@
       return date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
     };
 
-    const uniqueCategories = [...new Set(posts.map((post) => (post.category || "General").toLowerCase()))];
+    const uniqueCategories = [
+  ...new Set(
+    safePosts.map((post) =>
+      (post.category || "General").toLowerCase()
+    )
+  )
+];
 
-    const todayCount = posts.filter((post) => {
+    const todayCount = safePosts.filter((post) => {
       const d = new Date(post.created_at);
       const t = new Date();
       return d.getDate() === t.getDate() && d.getMonth() === t.getMonth() && d.getFullYear() === t.getFullYear();
     }).length;
 
     const filteredPosts = useMemo(() => {
-      let data = posts.filter((post) => post.title?.toLowerCase().includes(search.toLowerCase()));
+      let data = safePosts.filter((post) => post.title?.toLowerCase().includes(search.toLowerCase()));
       switch (sortBy) {
         case "oldest": data.sort((a, b) => Number(a.created_at || 0) - Number(b.created_at || 0)); break;
         case "az": data.sort((a, b) => a.title.localeCompare(b.title)); break;
@@ -61,7 +87,7 @@
         default: data.sort((a, b) => Number(b.created_at || 0) - Number(a.created_at || 0));
       }
       return data;
-    }, [posts, search, sortBy]);
+    }, [safePosts, search, sortBy]);
 
     const toggleSelect = (id) => setSelected((prev) => prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]);
     const selectAll = () => {
@@ -70,13 +96,7 @@
     };
     const bulkDelete = () => { if (!selected.length) return; setDeleteIds(selected); setShowDeleteModal(true); };
     const singleDelete = (id) => { setDeleteIds([id]); setShowDeleteModal(true); };
-    // const confirmDelete = () => {
-    //   const updated = posts.filter((post) => !deleteIds.includes(post.id));
-    //   localStorage.setItem("posts", JSON.stringify(updated));
-    //   setPosts(updated); setSelected([]); setDeleteIds([]); setShowDeleteModal(false);
-    //   setShowToast(true);
-    //   setTimeout(() => setShowToast(false), 1800);
-    // };
+  
 
     const confirmDelete = async () => {
     try {
@@ -84,11 +104,19 @@
       for (let id of deleteIds) {
         await fetch(`http://localhost:5000/api/posts/${id}`, {
           method: "DELETE",
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem("token")}`,
+          },
         });
       }
 
       // refetch updated posts
-      const res = await fetch("http://localhost:5000/api/posts");
+      const res = await fetch("http://localhost:5000/api/posts", {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+      });
+      
       const data = await res.json();
 
       setPosts(data);
@@ -137,7 +165,7 @@
 
         {/* Stat cards */}
         <div className="grid md:grid-cols-4 gap-4">
-          <StatCard title="Total Posts" value={posts.length} icon={<FaFileAlt />} color="blue" />
+          <StatCard title="Total Posts" value={safePosts.length} icon={<FaFileAlt />} color="blue" />
           <StatCard title="Published Today" value={todayCount} icon={<FaCalendarAlt />} color="violet" />
           <StatCard title="Categories" value={uniqueCategories.length} icon={<FaLayerGroup />} color="green" />
           <StatCard title="Selected" value={selected.length} icon={<FaCheckCircle />} color="blue" />

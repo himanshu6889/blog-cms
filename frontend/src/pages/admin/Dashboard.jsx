@@ -10,17 +10,26 @@ import {
 export default function Dashboard() {
 
   const [posts, setPosts] = useState([]);
-
-useEffect(() => {
-  fetch("http://localhost:5000/api/posts")
+  
+  useEffect(() => {
+  fetch("http://localhost:5000/api/posts", {
+    headers: {
+      Authorization: `Bearer ${localStorage.getItem("token")}`,
+    },
+  })
     .then((res) => res.json())
     .then((data) => {
-      setPosts(data);
+      console.log("API Response:", data); // debug
+
+      //  Ensure it's always an array
+      if (Array.isArray(data)) {
+        setPosts(data);
+      } else {
+        setPosts([]); // fallback
+      }
     })
     .catch((err) => console.error(err));
-}, []);
-  // const posts =
-  //   JSON.parse(localStorage.getItem("posts")) || [];
+  }, []);
 
   const categories = [
     ...new Set(
