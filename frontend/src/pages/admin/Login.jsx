@@ -22,37 +22,51 @@ export default function Login() {
 
   const navigate = useNavigate();
 
-  const handleLogin = () => {
-    const savedPassword =
-      localStorage.getItem("adminPassword") ||
-      "1234";
-
-    if (
-      username === "admin" &&
-      password === savedPassword
-    ) {
-      localStorage.setItem(
-        "isAdminLoggedIn",
-        "true"
-      );
-
-      if (remember) {
-        localStorage.setItem(
-          "rememberAdmin",
-          "true"
-        );
+  const handleLogin = async () => {
+    console.log("Login clicked"); // for debugging
+  try {
+    const res = await fetch(
+      "http://localhost:5000/api/auth/login",
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          email: username, // using username field as email
+          password: password,
+        }),
       }
+    );
 
-      navigate("/admin");
-    } else {
-      setError("Wrong username or password");
+    const data = await res.json();
+    console.log("Response:", data); // for debugging
+
+    if (!res.ok) {
+      setError(data.message || "Login failed");
       setShake(true);
-
-      setTimeout(() => {
-        setShake(false);
-      }, 500);
+      setTimeout(() => setShake(false), 500);
+      return;
     }
-  };
+
+    //  store token
+    localStorage.setItem("token", data.token);
+
+    // optional remember
+    if (remember) {
+      localStorage.setItem("rememberAdmin", "true");
+    }
+
+    // redirect
+    setTimeout(() => {
+  navigate("/admin");
+}, 100);
+
+  } catch (err) {
+    console.error(err);
+    setError("Server error");
+  }
+};
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center px-4">
@@ -197,7 +211,18 @@ export default function Login() {
         >
           Login
         </button>
+
+
+        <p className="mt-4 text-sm text-center">       
+          Don’t have an account?{" "}
+          <span
+          className="text-blue-500 cursor-pointer"
+          onClick={() => navigate("/signup")}>
+            Signup
+            </span>
+            </p>
       </div>
     </div>
   );
 }
+

@@ -1,10 +1,15 @@
 import { Navigate } from "react-router-dom";
 
-export default function AuthRedirect() {
-  const isLoggedIn =
-    localStorage.getItem("isAdminLoggedIn") === "true";
+const AuthRedirect = () => {
+  const token = localStorage.getItem("token");
 
-  return isLoggedIn
-    ? <Navigate to="/admin" replace />
-    : <Navigate to="/login" replace />;
-}
+  console.log("AuthRedirect token:", token); // debug
+
+  if (token) {
+    return <Navigate to="/admin" replace />;
+  }
+
+  return <Navigate to="/login" replace />;
+};
+
+export default AuthRedirect;

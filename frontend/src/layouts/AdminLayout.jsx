@@ -10,13 +10,13 @@ export default function AdminLayout() {
   const [pinned, setPinned] = useState(false);
 
   useEffect(() => {
-    const isLoggedIn = localStorage.getItem("isAdminLoggedIn") === "true";
+    const token = localStorage.getItem("token");
     const isAdminRoute = location.pathname.startsWith("/admin");
-    if (isAdminRoute && !isLoggedIn) navigate("/login");
+    if (isAdminRoute && !token) navigate("/login");
   }, [navigate, location.pathname]);
 
   const confirmLogout = () => {
-    localStorage.removeItem("isAdminLoggedIn");
+    localStorage.removeItem("token");
     navigate("/login");
   };
 

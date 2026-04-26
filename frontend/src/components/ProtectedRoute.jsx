@@ -1,14 +1,13 @@
 import { Navigate } from "react-router-dom";
 
-export default function ProtectedRoute({
-  children
-}) {
-  const isLoggedIn =
-    localStorage.getItem(
-      "isAdminLoggedIn"
-    ) === "true";
+const ProtectedRoute = ({ children }) => {
+  const token = localStorage.getItem("token");
 
-  return isLoggedIn
-    ? children
-    : <Navigate to="/login" />;
-}
+  if (!token) {
+    return <Navigate to="/login" />;
+  }
+
+  return children;
+};
+
+export default ProtectedRoute;
