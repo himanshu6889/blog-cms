@@ -46,19 +46,35 @@ export default function Profile() {
     <div className="p-6 text-white">
       <h1 className="text-2xl font-bold mb-6">My Profile</h1>
 
-      <div className="bg-gray-800 p-6 rounded-xl max-w-lg">
-        
+      <div className="bg-gray-800 p-8 rounded-2xl max-w-xl shadow-lg">
+
         {/* Avatar */}
-        <div className="mb-4">
-          <label>Avatar URL</label>
-          <input
-            type="text"
-            value={user.avatar || ""}
-            onChange={(e) =>
-              setUser({ ...user, avatar: e.target.value })
-            }
-            className="w-full p-2 mt-1 bg-gray-700 rounded"
-          />
+        <div className="mb-6 flex items-center gap-4">
+          {/* Avatar Preview */}
+          <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
+            {user.avatar ? (
+              <img
+                src={user.avatar}
+                alt="avatar"
+                className="w-full h-full object-cover"
+              />
+            ) : (
+              <span className="text-xl font-bold text-white">
+                {user.name?.charAt(0).toUpperCase()}
+              </span>
+            )}
+          </div>
+
+          {/* Input */}
+          <div className="flex-1">
+            <label className="block mb-1">Avatar URL</label>
+            <input
+              type="text"
+              value={user.avatar || ""}
+              onChange={(e) => setUser({ ...user, avatar: e.target.value })}
+              className="w-full p-2 bg-gray-700 rounded"
+            />
+          </div>
         </div>
 
         {/* Name */}
@@ -67,9 +83,7 @@ export default function Profile() {
           <input
             type="text"
             value={user.name}
-            onChange={(e) =>
-              setUser({ ...user, name: e.target.value })
-            }
+            onChange={(e) => setUser({ ...user, name: e.target.value })}
             className="w-full p-2 mt-1 bg-gray-700 rounded"
           />
         </div>
@@ -90,16 +104,14 @@ export default function Profile() {
           <label>Bio</label>
           <textarea
             value={user.bio || ""}
-            onChange={(e) =>
-              setUser({ ...user, bio: e.target.value })
-            }
+            onChange={(e) => setUser({ ...user, bio: e.target.value })}
             className="w-full p-2 mt-1 bg-gray-700 rounded"
           />
         </div>
 
         <button
           onClick={handleUpdate}
-          className="bg-blue-600 px-4 py-2 rounded"
+          className="bg-blue-600 hover:bg-blue-700 transition px-6 py-2 rounded-lg font-semibold"
         >
           Update Profile
         </button>
