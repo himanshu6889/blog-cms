@@ -19,17 +19,10 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Signup from "./pages/admin/Signup";
 
-
 const router = createBrowserRouter([
-  /* START PAGE */
-  {
-    path: "/",
-    element: <AuthRedirect />
-  },
-
   /* PUBLIC WEBSITE */
   {
-    path: "/site",
+    path: "/",
     element: <MainLayout />,
     children: [
       {
@@ -37,59 +30,27 @@ const router = createBrowserRouter([
         element: <Home />
       },
       {
-        path: "blog/:id",
-        element: <BlogDetails />
-      },
-      {
-        path: "posts",
-        element: <Home />
-      }
-    ]
-  },
-
-  /* DIRECT PUBLIC BLOG ROUTE */
-  {
-    path: "/blog/:slug",
-    element: <MainLayout />,
-    children: [
-      {
-        index: true,
+        path: "blog/:slug",
         element: <BlogDetails />
       }
     ]
   },
 
-  /* DIRECT POSTS ROUTE */
-  {
-    path: "/posts",
-    element: <MainLayout />,
-    children: [
-      {
-        index: true,
-        element: <Home />
-      }
-    ]
-  },
-
-  /* LOGIN */
+  /*  AUTH */
   {
     path: "/login",
     element: <Login />
   },
-
-  /* SIGNUP */
   {
     path: "/signup",
     element: <Signup />
   },
-
-  /* FORGOT PASSWORD */
   {
     path: "/forgot-password",
     element: <ForgotPassword />
   },
 
-  /* ADMIN */
+  /*  ADMIN */
   {
     path: "/admin",
     element: (

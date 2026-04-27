@@ -68,7 +68,7 @@ export default function Sidebar({ pinned, setPinned }) {
         <SidebarItem to="/admin/posts"       icon={<FaFolder />} label="All Posts"   expanded={expanded} />
 
         <button
-          onClick={() => navigate("/site")}
+          onClick={() => navigate("/")}
           className={`
             w-full flex items-center
             ${expanded ? "gap-3 px-4" : "justify-center px-0"}

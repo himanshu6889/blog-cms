@@ -6,48 +6,32 @@ export default function BlogDetails() {
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
-  const [loading, setLoading] = useState(true); // loading state added
+  const [loading, setLoading] = useState(true); 
 
   useEffect(() => {
     const fetchPost = async () => {
-      try {
-        setLoading(true);
-        const res = await fetch("http://localhost:5000/api/posts", {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
-        });
-        const data = await res.json();
-        if (!Array.isArray(data)) {
-          console.error("Invalid API response:", data);
-          setPost(null);
-          return;
-        }
+  try {
+    setLoading(true);
 
-        console.log("Fetched posts:", data); // log fetched data 
+    const res = await fetch(`http://localhost:5000/api/posts/${slug}`);
+    const data = await res.json();
 
-        const found = data.find((p) => {
-          console.log(`Checking post: ${p.slug} against slug param: ${slug}`);
-          return String(p.slug) === String(slug);
-        });
+    console.log("POST DATA:", data);
 
-        setPost(found || null);
+    if (data.error) {
+      setPost(null);
+    } else {
+      setPost(data);
+    }
 
-        if (found) {
-          const related = data.filter(
-            (p) => p.category === found.category && p.slug !== found.slug
-          );
-          setRelatedPosts(related.slice(0, 3));
-        }
-      } catch (err) {
-        console.error("Error loading post:", err);
-      } finally {
-        setLoading(false); // only mark done after fetch completes
-      }
-    };
-
-    fetchPost();
-  }, [slug]);
+  } catch (err) {
+    console.error("Error loading post:", err);
+  } finally {
+    setLoading(false);
+  }
+};
+fetchPost();
+}, [slug]);
 
   const formatDate = (value) => {
     const date = new Date(value);
@@ -69,7 +53,7 @@ export default function BlogDetails() {
     });
   };
 
-  // ✅ Show spinner while fetching — not "Post Not Found"
+  //  Show spinner while fetching — not "Post Not Found"
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -80,7 +64,7 @@ export default function BlogDetails() {
     );
   }
 
-  // ✅ Only show "not found" after fetch is complete and post is still null
+  //  Only show "not found" after fetch is complete and post is still null
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
