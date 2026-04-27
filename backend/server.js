@@ -4,6 +4,7 @@ import dotenv from "dotenv";
 import { pool } from "./db.js";
 import postRoutes from "./routes/posts.js";
 import authRoutes from "./routes/auth.js";
+import userRoutes from "./routes/user.js";
 
 dotenv.config();  
 
@@ -17,6 +18,9 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 // routes
 app.use("/api/auth", authRoutes);   
 app.use("/api/posts", postRoutes);
+
+// user profile routes
+app.use("/api/users", userRoutes);
 
 // test route
 app.get("/", (req, res) => {

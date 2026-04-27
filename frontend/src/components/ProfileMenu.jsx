@@ -1,0 +1,88 @@
+import { useEffect, useState, useRef } from "react";
+import { useNavigate } from "react-router-dom";
+
+export default function ProfileMenu() {
+  const [user, setUser] = useState(null);
+  const [open, setOpen] = useState(false);
+  const menuRef = useRef();
+  const navigate = useNavigate();
+
+  const token = localStorage.getItem("token");
+
+  useEffect(() => {
+    fetch("http://localhost:5000/api/users/me", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then(res => res.json())
+      .then(data => setUser(data));
+  }, []);
+
+    // Close dropdown on outside click
+
+    useEffect(() => {
+  const handleClickOutside = (event) => {
+    if (menuRef.current && !menuRef.current.contains(event.target)) {
+      setOpen(false);
+    }
+  };
+
+  document.addEventListener("mousedown", handleClickOutside);
+  return () => {
+    document.removeEventListener("mousedown", handleClickOutside);
+  };
+}, []);
+
+  const logout = () => {
+    localStorage.removeItem("token");
+    navigate("/login");
+  };
+
+  if (!user) return null;
+
+  return (
+    <div ref={menuRef} className="relative">
+        
+      {/* Avatar + Name */}
+      <div
+        onClick={() => setOpen(!open)}
+        className="flex items-center gap-2 cursor-pointer"
+      >
+        <img
+          src={user.avatar || "https://via.placeholder.com/40"}
+          alt="avatar"
+          className="w-10 h-10 rounded-full"
+        />
+        <span className="text-white font-semibold">
+          {user.name}
+        </span>
+      </div>
+
+      {/* Dropdown */}
+      {open && (
+        <div className="absolute right-0 mt-2 w-40 bg-gray-800 rounded shadow-lg">
+          <button
+          onClick={() => {
+            setOpen(false);         
+            navigate("/admin/profile");
+        }}
+            className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+          >
+            Profile
+          </button>
+
+          <button
+          onClick={() => {
+            setOpen(false);
+            logout();
+        }}
+            className="block w-full text-left px-4 py-2 hover:bg-gray-700 text-red-400"
+          >
+            Logout
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}

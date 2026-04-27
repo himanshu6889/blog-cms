@@ -19,6 +19,8 @@ import ProtectedRoute from "./components/ProtectedRoute";
 
 import Signup from "./pages/admin/Signup";
 
+import Profile from "./pages/admin/Profile";
+
 const router = createBrowserRouter([
   /* PUBLIC WEBSITE */
   {
@@ -74,6 +76,10 @@ const router = createBrowserRouter([
       {
         path: "edit-post/:slug",
         element: <EditPost />
+      },
+      {
+        path: "profile",
+        element: <Profile />
       }
     ]
   },

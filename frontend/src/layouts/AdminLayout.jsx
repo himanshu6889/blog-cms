@@ -2,6 +2,8 @@ import { useState, useEffect } from "react";
 import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import { FaSignOutAlt } from "react-icons/fa";
 import Sidebar from "../components/Sidebar";
+import ProfileMenu from "../components/ProfileMenu";
+
 
 export default function AdminLayout() {
   const navigate = useNavigate();
@@ -29,6 +31,9 @@ export default function AdminLayout() {
         style={{ paddingLeft: pinned ? "280px" : "84px" }}
         className="min-h-screen transition-all duration-300 pt-6 pr-6 pb-6 md:pt-8 md:pr-8 md:pb-8"
       >
+        <div className="flex justify-end mb-4">
+          <ProfileMenu />
+          </div>
         <Outlet />
       </main>
 
