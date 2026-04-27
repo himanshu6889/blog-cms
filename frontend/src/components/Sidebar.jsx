@@ -42,7 +42,9 @@ export default function Sidebar({ pinned, setPinned }) {
             <h2 className="text-xl font-bold tracking-tight text-white truncate">
               UxismClub
             </h2>
-            <p className="text-xs text-slate-400 mt-0.5">Admin Panel</p>
+            {isLoggedIn && (
+              <p className="text-xs text-slate-400 mt-0.5">Admin Panel</p>
+              )}
           </div>
         )}
         <button
@@ -63,9 +65,30 @@ export default function Sidebar({ pinned, setPinned }) {
         onMouseEnter={() => setHovered(true)}
         className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden"
       >
-        <SidebarItem to="/admin"             icon={<FaHome />}   label="Dashboard"   expanded={expanded} end />
-        <SidebarItem to="/admin/create-post" icon={<FaPen />}    label="Create Post" expanded={expanded} />
-        <SidebarItem to="/admin/posts"       icon={<FaFolder />} label="All Posts"   expanded={expanded} />
+        {isLoggedIn && (
+          <>
+          <SidebarItem to="/admin" icon={<FaHome />} label="Dashboard" expanded={expanded} end />
+          <SidebarItem to="/admin/create-post" icon={<FaPen />} label="Create Post" expanded={expanded} />
+          <SidebarItem to="/admin/posts" icon={<FaFolder />} label="All Posts" expanded={expanded} />
+          </>
+)}
+
+{!isLoggedIn && (
+  <>
+    <SidebarItem
+      to="/login"
+      icon={<FaSignOutAlt />}
+      label="Login"
+      expanded={expanded}
+    />
+    <SidebarItem
+      to="/signup"
+      icon={<FaPen />}
+      label="Signup"
+      expanded={expanded}
+    />
+  </>
+)}
 
         <button
           onClick={() => navigate("/")}

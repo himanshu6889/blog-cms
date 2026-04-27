@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 import showIcon from "../../assets/show.svg";
 import hideIcon from "../../assets/hide.svg";
@@ -70,6 +70,15 @@ export default function Login() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-200 dark:from-slate-900 dark:to-slate-800 flex items-center justify-center px-4">
+
+      <div className="absolute top-6 left-6">
+        <Link
+        to="/"
+        className="text-blue-500 hover:text-blue-400 font-medium"
+        >
+          ← Back to Website
+          </Link>
+          </div>
 
       <style>
         {`
