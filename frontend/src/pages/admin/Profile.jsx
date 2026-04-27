@@ -36,6 +36,7 @@ export default function Profile() {
 
       const data = await res.json();
       setUser(data);
+      window.dispatchEvent(new Event("profileUpdated"));
       alert("Profile updated!");
     } catch (err) {
       console.error(err);
@@ -43,15 +44,15 @@ export default function Profile() {
   };
 
   return (
-    <div className="p-6 text-white">
+    <div className="p-6 text-slate-900 dark:text-white">
       <h1 className="text-2xl font-bold mb-6">My Profile</h1>
 
-      <div className="bg-gray-800 p-8 rounded-2xl max-w-xl shadow-lg">
+      <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl max-w-xl shadow-lg">
 
         {/* Avatar */}
         <div className="mb-6 flex items-center gap-4">
           {/* Avatar Preview */}
-          <div className="w-16 h-16 rounded-full bg-gray-700 flex items-center justify-center overflow-hidden">
+          <div className="w-16 h-16 rounded-full bg-slate-200 dark:bg-gray-700 text-black dark:text-white flex items-center justify-center overflow-hidden">
             {user.avatar ? (
               <img
                 src={user.avatar}
@@ -59,21 +60,58 @@ export default function Profile() {
                 className="w-full h-full object-cover"
               />
             ) : (
-              <span className="text-xl font-bold text-white">
-                {user.name?.charAt(0).toUpperCase()}
+              <span className="text-xl font-bold text-black dark:text-white">
+                {user.name ? user.name.charAt(0).toUpperCase() : "?"}
               </span>
             )}
           </div>
 
           {/* Input */}
           <div className="flex-1">
-            <label className="block mb-1">Avatar URL</label>
             <input
-              type="text"
-              value={user.avatar || ""}
-              onChange={(e) => setUser({ ...user, avatar: e.target.value })}
-              className="w-full p-2 bg-gray-700 rounded"
+              type="file"
+              accept="image/*"
+              onChange={async (e) => {
+                const file = e.target.files[0];
+                if (!file) return;
+
+                const formData = new FormData();
+                formData.append("avatar", file);
+
+                try {
+                  const res = await fetch("http://localhost:5000/api/upload", {
+                    method: "POST",
+                    body: formData,
+                  });
+
+                  const data = await res.json();
+
+                  // Save URL
+                  setUser((prev) => ({
+                    ...prev,
+                    avatar: data.url,
+                  }));
+                } catch (err) {
+                  console.error("Upload error:", err);
+                }
+              }}
+              className="w-full p-2 mt-1 bg-slate-200 dark:bg-gray-700 text-black dark:text-white rounded"
             />
+
+            {user.avatar && (
+              <button
+                type="button"
+                onClick={() =>
+                  setUser((prev) => ({
+                    ...prev,
+                    avatar: "",
+                  }))
+                }
+                className="mt-2 text-sm text-red-500 hover:underline"
+              >
+                Remove Avatar
+              </button>
+            )}
           </div>
         </div>
 
@@ -84,7 +122,7 @@ export default function Profile() {
             type="text"
             value={user.name}
             onChange={(e) => setUser({ ...user, name: e.target.value })}
-            className="w-full p-2 mt-1 bg-gray-700 rounded"
+            className="w-full p-2 mt-1 bg-slate-200 dark:bg-gray-700 text-black dark:text-white rounded"
           />
         </div>
 
@@ -95,7 +133,7 @@ export default function Profile() {
             type="text"
             value={user.email}
             disabled
-            className="w-full p-2 mt-1 bg-gray-600 rounded"
+            className="w-full p-2 mt-1 bg-slate-200 dark:bg-gray-700 text-black dark:text-white rounded"
           />
         </div>
 
@@ -105,13 +143,13 @@ export default function Profile() {
           <textarea
             value={user.bio || ""}
             onChange={(e) => setUser({ ...user, bio: e.target.value })}
-            className="w-full p-2 mt-1 bg-gray-700 rounded"
+            className="w-full p-2 mt-1 bg-slate-200 dark:bg-gray-700 text-black dark:text-white rounded"
           />
         </div>
 
         <button
           onClick={handleUpdate}
-          className="bg-blue-600 hover:bg-blue-700 transition px-6 py-2 rounded-lg font-semibold"
+          className="bg-blue-600 hover:bg-blue-700 text-white px-6 py-2 rounded-lg font-semibold"
         >
           Update Profile
         </button>

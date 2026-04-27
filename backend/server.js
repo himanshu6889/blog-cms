@@ -5,6 +5,8 @@ import { pool } from "./db.js";
 import postRoutes from "./routes/posts.js";
 import authRoutes from "./routes/auth.js";
 import userRoutes from "./routes/user.js";
+import path from "path";
+import uploadRoutes from "./routes/upload.js";
 
 dotenv.config();  
 
@@ -18,6 +20,10 @@ app.use(express.urlencoded({ limit: "10mb", extended: true }));
 // routes
 app.use("/api/auth", authRoutes);   
 app.use("/api/posts", postRoutes);
+
+// serve uploaded files
+app.use("/uploads", express.static("uploads"));
+app.use("/api/upload", uploadRoutes);
 
 // user profile routes
 app.use("/api/users", userRoutes);

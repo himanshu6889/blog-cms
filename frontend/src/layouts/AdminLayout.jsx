@@ -23,13 +23,13 @@ export default function AdminLayout() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-100 dark:bg-slate-900 transition-colors duration-300">
+    <div className="min-h-screen bg-white dark:bg-slate-900 transition-colors duration-300">
       <Sidebar pinned={pinned} setPinned={setPinned} />
 
       {/* MAIN CONTENT: use individual padding sides to avoid md:p-8 overriding pl */}
       <main
         style={{ paddingLeft: pinned ? "280px" : "84px" }}
-        className="min-h-screen transition-all duration-300 pt-6 pr-6 pb-6 md:pt-8 md:pr-8 md:pb-8"
+        className="min-h-screen bg-white dark:bg-slate-900 transition-all duration-300 pt-6 pr-6 pb-6 md:pt-8 md:pr-8 md:pb-8"
       >
         <div className="flex justify-end mb-4">
           <ProfileMenu />

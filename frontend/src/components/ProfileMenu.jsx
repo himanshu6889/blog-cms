@@ -19,6 +19,25 @@ export default function ProfileMenu() {
       .then(data => setUser(data));
   }, []);
 
+// Listen for profile updates
+useEffect(() => {
+  const fetchUser = () => {
+    fetch("http://localhost:5000/api/users/me", {
+      headers: {
+        Authorization: "Bearer " + token,
+      },
+    })
+      .then(res => res.json())
+      .then(data => setUser(data));
+  };
+
+  window.addEventListener("profileUpdated", fetchUser);
+
+  return () => {
+    window.removeEventListener("profileUpdated", fetchUser);
+  };
+}, []);
+
     // Close dropdown on outside click
 
     useEffect(() => {
@@ -49,25 +68,32 @@ export default function ProfileMenu() {
         onClick={() => setOpen(!open)}
         className="flex items-center gap-2 cursor-pointer"
       >
-        <img
-          src={user.avatar || "https://via.placeholder.com/40"}
+        {user.avatar ? (
+          <img
+          src={user.avatar}
           alt="avatar"
-          className="w-10 h-10 rounded-full"
-        />
-        <span className="text-white font-semibold">
+          className="w-10 h-10 rounded-full object-cover"
+          />
+        ) : (
+        <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold">
+          {user.name?.charAt(0).toUpperCase()}
+          </div>
+        )}
+
+        <span className="text-slate-900 dark:text-white font-semibold">
           {user.name}
         </span>
       </div>
 
       {/* Dropdown */}
       {open && (
-        <div className="absolute right-0 mt-2 w-40 bg-gray-800 rounded shadow-lg">
+        <div className="absolute right-0 mt-2 w-40 bg-white dark:bg-gray-800 text-black dark:text-white rounded shadow-lg">
           <button
           onClick={() => {
             setOpen(false);         
             navigate("/admin/profile");
         }}
-            className="block w-full text-left px-4 py-2 hover:bg-gray-700"
+            className="block w-full text-left px-4 py-2 hover:bg-slate-200 dark:hover:bg-gray-700"
           >
             Profile
           </button>
@@ -77,7 +103,7 @@ export default function ProfileMenu() {
             setOpen(false);
             logout();
         }}
-            className="block w-full text-left px-4 py-2 hover:bg-gray-700 text-red-400"
+            className="block w-full text-left px-4 py-2 hover:bg-slate-200 dark:hover:bg-gray-700 text-red-400"
           >
             Logout
           </button>
