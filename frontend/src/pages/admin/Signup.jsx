@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { useNavigate } from "react-router-dom";
+import { useNavigate, Link } from "react-router-dom";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -43,7 +43,19 @@ const Signup = () => {
   };
 
   return (
-    <div className="flex justify-center items-center h-screen">
+    <div className="flex justify-center items-center h-screen relative">
+
+      {/* Back to website option */}
+
+      <div className="absolute top-6 left-6">
+        <Link
+          to="/"
+          className="text-blue-500 hover:text-blue-400 font-medium"
+        >
+          ← Back to Website
+        </Link>
+      </div>
+
       <form onSubmit={handleSubmit} className="p-6 shadow-lg rounded w-96">
         <h2 className="text-xl mb-4">Signup</h2>
 
@@ -77,6 +89,18 @@ const Signup = () => {
         <button className="w-full bg-blue-500 text-white p-2">
           Signup
         </button>
+
+        {/* login option */}
+
+        <p className="mt-4 text-sm text-center">
+          Already have an account?{" "}
+          <span
+          className="text-blue-500 cursor-pointer"
+          onClick={() => navigate("/login")}
+          >
+            Login
+            </span>
+            </p>
       </form>
     </div>
   );
