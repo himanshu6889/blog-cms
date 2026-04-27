@@ -5,9 +5,17 @@ import {
   getPosts,
   updatePost, 
   deletePost,
+  getPublicPosts,
+  getPostBySlug,
 } from "../controllers/postController.js";
 
 const router = express.Router();
+
+// PUBLIC ROUTES
+router.get("/public", getPublicPosts);
+router.get("/:slug", getPostBySlug);
+
+// PROTECTED ROUTES
 
 router.post("/", verifyToken, createPost);
 router.get("/", verifyToken, getPosts);

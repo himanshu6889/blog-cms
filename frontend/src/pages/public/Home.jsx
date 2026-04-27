@@ -6,15 +6,14 @@ export default function Home() {
   const [posts, setPosts] = useState([]);
 
 useEffect(() => {
-  fetch("http://localhost:5000/api/posts")
+  fetch("http://localhost:5000/api/posts/public")
     .then((res) => res.json())
     .then((data) => {
       setPosts(data);
     })
     .catch((err) => console.error(err));
 }, []);
-  // const posts =
-  //   JSON.parse(localStorage.getItem("posts")) || [];
+
 
   // NORMALIZE CATEGORY 
   const formatCategory = (cat) => {

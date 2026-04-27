@@ -83,3 +83,42 @@ export const deletePost = async (req, res) => {
     res.status(500).json({ error: "Error deleting post" });
   }
 };
+
+
+// GET PUBLIC POSTS (no auth required)
+export const getPublicPosts = async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT id, title, slug, category, thumbnail, description, content, created_at
+      FROM posts
+      ORDER BY created_at DESC
+    `);
+
+    
+    res.json(result.rows);
+  } catch (err) {
+    console.error("PUBLIC POSTS ERROR:", err);
+    res.status(500).json({ error: "Error fetching public posts" });
+  }
+};
+
+// GET SINGLE POST BY SLUG (public)
+export const getPostBySlug = async (req, res) => {
+  const { slug } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT * FROM posts WHERE slug = $1`,
+      [slug]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("GET POST ERROR:", err);
+    res.status(500).json({ error: "Error fetching post" });
+  }
+};
