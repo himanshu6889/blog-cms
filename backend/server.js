@@ -34,9 +34,7 @@ app.get("/", (req, res) => {
 });
 
 // DB connection
-pool.connect()
-  .then(() => console.log("PostgreSQL Connected"))
-  .catch(err => console.error("DB Connection Error:", err));
+console.log("Server starting...");
 
 // start server
 const PORT = process.env.PORT;
