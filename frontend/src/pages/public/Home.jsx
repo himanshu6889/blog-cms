@@ -145,7 +145,7 @@ useEffect(() => {
                 {featured.title}
               </h2>
 
-              <p className="text-slate-600 dark:text-slate-400 mt-3">
+              <p className="text-slate-600 dark:text-slate-400 mt-3 border-l-4 border-blue-400 dark:border-blue-500 pl-4 line-clamp-2 overflow-hidden [word-break:break-word] [overflow-wrap:anywhere]">
                 {featured.description || "No description available."}
               </p>
               <div className="flex justify-between items-center mt-6 text-sm text-slate-500 dark:text-slate-400">
@@ -202,7 +202,7 @@ useEffect(() => {
                   {post.title}
                 </h3>
 
-                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 flex-1">
+                <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 overflow-hidden border-l-4 border-blue-400 dark:border-blue-500 pl-3 [word-break:break-word] [overflow-wrap:anywhere]">
                   {post.description || "No description available."}
                 </p>
                 
