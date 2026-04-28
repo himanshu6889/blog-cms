@@ -2,7 +2,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import Editor from "../../editor/Editor";
 
-import API_BASE from "../../api";
+import API_BASE from "../api";
 
 export default function EditPost() {
   const navigate = useNavigate();

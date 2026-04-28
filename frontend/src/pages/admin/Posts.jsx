@@ -6,7 +6,7 @@
     FaFileAlt, FaLayerGroup, FaCalendarAlt, FaEye, FaPen
   } from "react-icons/fa";
 
-  import API_BASE from "../../api";
+  import API_BASE from "../api";
 
   export default function Posts() {
     const [posts, setPosts] = useState([]);

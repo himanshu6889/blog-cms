@@ -4,7 +4,7 @@ import { useNavigate, Link } from "react-router-dom";
 import showIcon from "../../assets/show.svg";
 import hideIcon from "../../assets/hide.svg";
 
-import API_BASE from "../../api";
+import API_BASE from "../api";
 
 export default function Login() {
   const [username, setUsername] = useState("");
