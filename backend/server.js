@@ -38,11 +38,19 @@ pool.connect()
   .then(() => console.log("PostgreSQL Connected"))
   .catch(err => console.error("DB Connection Error:", err));
 
-// start server
-app.listen(PORT, "0.0.0.0", () => {
-  console.log(`Server running on port ${PORT}`);
+// test route
+app.get("/", (req, res) => {
+  res.send("Backend is LIVE 🚀");
 });
 
-app.listen(PORT, () => {
+// DB connection
+pool.connect()
+  .then(() => console.log("PostgreSQL Connected"))
+  .catch(err => console.error("DB Connection Error:", err));
+
+// start server
+const PORT = process.env.PORT || 5000;
+
+app.listen(PORT, "0.0.0.0", () => {
   console.log(`Server running on port ${PORT}`);
 });
