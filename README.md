@@ -2,19 +2,109 @@
 # 📝 Blog CMS (Full Stack)
 
 A modern full-stack Blog Content Management System built with  **React, Node.js, Express, and PostgreSQL** .
-It allows users to create, manage, and view blog posts with authentication and a responsive admin dashboard.
+
+This project has evolved into a **feature-rich CMS** with authentication, admin dashboard, post management, and a public blog website.
 
 ---
 
-# 🚀 Project Overview
+# 🚀 Current Project Status (UPDATED)
 
-This project is a **developer-focused CMS** with:
+| Feature                      | Status      |
+| ---------------------------- | ----------- |
+| Authentication (JWT)         | ✅ Complete |
+| Admin Dashboard              | ✅ Complete |
+| Create / Edit / Delete Posts | ✅ Complete |
+| Public Blog Website          | ✅ Complete |
+| Profile System + Avatar      | ✅ Complete |
+| Sidebar Navigation           | ✅ Complete |
+| Author System (NEW)          | ✅ Complete |
+| Author Display (Home + Blog) | ✅ Complete |
+| Route Highlight Fix          | ✅ Complete |
+| UI Improvements              | ✅ Complete |
 
-* Public blog website
-* Admin dashboard
-* Authentication system
-* Profile management with avatar upload
-* Post creation & management
+---
+
+# 🆕 Latest Fixes (This Session)
+
+## ✅ 1. Author Not Showing (FIXED)
+
+### Problem:
+
+* Posts did not show author name
+
+### Solution:
+
+* Added `user_id` in posts table
+* Joined users table in backend
+
+```sql
+SELECT posts.*, users.name AS author_name, users.avatar AS author_avatar
+FROM posts
+LEFT JOIN users ON posts.user_id = users.id
+```
+
+---
+
+## ✅ 2. Author Display in UI (FIXED)
+
+### Updated:
+
+* `Home.jsx` → shows author in cards
+* `BlogDetails.jsx` → shows author below date
+
+### Result:
+
+* 👤 Author name visible
+* 🔤 Avatar fallback (first letter)
+
+---
+
+## ✅ 3. Blog Page Missing Author (FIXED)
+
+### Problem:
+
+* Blog page (`/blog/:slug`) didn’t show author
+
+### Fix:
+
+* Updated `getPostBySlug` API with JOIN
+* Added author UI in BlogDetails page
+
+---
+
+## ✅ 4. Sidebar "View Website" Not Highlighting (FIXED)
+
+### Problem:
+
+* Used `button` instead of `NavLink`
+
+### Fix:
+
+* Replaced with:
+
+```jsx
+<SidebarItem to="/" ... />
+```
+
+* Added support for:
+
+```js
+location.pathname.startsWith("/blog")
+```
+
+### Result:
+
+* Sidebar now highlights correctly on:
+  * `/`
+  * `/blog/:slug`
+
+---
+
+## ✅ 5. Layout Improvements
+
+* Author aligned properly
+* Clean card structure
+* Better spacing and UX
 
 ---
 
@@ -36,8 +126,7 @@ This project is a **developer-focused CMS** with:
 ## Other
 
 * JWT Authentication
-* Multer (for local image uploads)
-* REST API
+* Multer (file uploads)
 
 ---
 
@@ -48,187 +137,105 @@ blog-cms/
 │
 ├── frontend/
 │   ├── pages/
-│   │   ├── public/        # Home, BlogDetails
-│   │   └── admin/         # Dashboard, Posts, Profile, CreatePost
-│   ├── components/        # Sidebar, ProfileMenu, etc.
-│   ├── layouts/           # MainLayout, AdminLayout
-│   └── routes.jsx
+│   │   ├── public/
+│   │   │   ├── Home.jsx
+│   │   │   └── BlogDetails.jsx
+│   │   └── admin/
+│   ├── components/
+│   │   └── Sidebar.jsx
 │
 ├── backend/
-│   ├── routes/            # posts, users, upload
 │   ├── controllers/
-│   ├── db.js
-│   └── server.js
+│   │   └── postController.js
+│   ├── routes/
+│   └── db.js
 │
-└── uploads/               # Stored images (avatars)
+└── uploads/
 ```
 
 ---
 
 # 🔐 Authentication System
 
-* Signup & Login with JWT
-* Protected admin routes using `ProtectedRoute`
-* Token stored in `localStorage`
-* Auto redirect if not authenticated
+* JWT-based login/signup
+* Token stored in localStorage
+* Protected admin routes
 
 ---
 
-# 👤 Profile System (NEW FEATURE)
+# 📰 Posts System
 
-## Features Implemented
+## Features:
 
-* Fetch logged-in user data
-* Update name, bio, avatar
-* Upload avatar from system (local upload)
-* Remove avatar option
-* Fallback avatar (first letter of name)
-* Real-time navbar update (no refresh)
-
-## Avatar Logic
-
-* If avatar exists → show image
-* If removed → show first letter
-* Stored in backend via `/api/upload`
-
----
-
-# 📰 Posts Management
-
-## Features
-
-* View all posts
-* Search posts
-* Sort (Newest, Oldest, A-Z)
-* Select multiple posts
-* Bulk delete
-* Single delete
+* Create post
 * Edit post
-* View post
-* Category grouping
-* Stats dashboard (Total, Today, Categories)
+* Delete post
+* View posts (admin)
+* Public blog view
 
-## UI Highlights
+## New Enhancement:
 
-* Table layout
-* Hover actions
-* Toast notifications
-* Delete confirmation modal
+* Author linked to each post
 
 ---
 
-# 🎨 UI / UX Features
+# 👤 Author System (NEW FEATURE)
 
-* Dark / Light mode toggle
-* Responsive sidebar (expand/collapse)
-* Animated dropdown menu
-* Clean modern dashboard design
-* Avatar preview + fallback
-* Smooth transitions
+## Features:
+
+* Each post linked to user
+* Displays:
+  * Author name
+  * Avatar (or fallback letter)
+
+## Used in:
+
+* Home page ✅
+* Blog details page ✅
 
 ---
 
-# 🔄 Routing System
+# 🎯 Routing
 
-## Public Routes
+## Public
 
 * `/` → Home
-* `/blog/:slug` → Blog Details
+* `/blog/:slug` → Blog details
 
-## Auth Routes
+## Admin
 
-* `/login`
-* `/signup`
-* `/forgot-password`
-
-## Admin Routes
-
-* `/admin` → Dashboard
-* `/admin/create-post`
+* `/admin`
 * `/admin/posts`
-* `/admin/edit-post/:slug`
-* `/admin/profile`
+* `/admin/create-post`
 
 ---
 
-# 📦 API Endpoints
+# 🧠 Key Learnings
 
-## Users
-
-* `GET /api/users/me`
-* `PUT /api/users/me`
-
-## Posts
-
-* `GET /api/posts`
-* `POST /api/posts`
-* `DELETE /api/posts/:id`
-
-## Upload
-
-* `POST /api/upload` → Upload avatar (Multer)
-
----
-
-# 🖼 File Upload System
-
-* Uses **Multer**
-* Stores images in `/uploads`
-* Served via:
-
-```
-http://localhost:5000/uploads/<filename>
-```
-
----
-
-# 🧠 Key Problems Solved
-
-### ✔ Routing Issues
-
-* Fixed wrong component rendering (Posts vs Profile)
-
-### ✔ Theme Issues
-
-* Replaced hardcoded colors with `dark:` classes
-
-### ✔ Dropdown UX
-
-* Close on click + outside click detection
-
-### ✔ Navbar Sync
-
-* Real-time profile update using custom event system
-
-### ✔ Avatar Handling
-
-* Upload + remove + fallback logic
-
-### ✔ Data Safety
-
-* Ensured array checks before rendering posts
+* Importance of **JOIN in relational DB**
+* Difference between:
+  * `Link` vs `NavLink`
+* UI must match backend data
+* Route-based UI state (sidebar highlighting)
 
 ---
 
 # ⚠️ Known Limitations
 
-* No pagination (all posts load at once)
-* No image compression
-* No role-based access (admin only assumed)
-* Local file storage (not scalable for production)
+* No pagination
+* No comments system
+* No author profile page yet
+* Local file storage only
 
 ---
 
 # 🚀 Future Improvements
 
-* Pagination & infinite scroll
-* Cloud storage (Cloudinary / S3)
-* Drag & drop upload
-* Cover image for profile
-* Comments system
-* Post drafts & publishing workflow
-* Rich text editor
-* Notifications system
+* 👤 Author profile page (`/author/:id`)
+* 📝 Comments system
+* ☁️ Cloud storage (Cloudinary / S3)
+* 🔎 Advanced search
+* 📄 Pagination
 
 ---
 
@@ -252,31 +259,21 @@ npm run dev
 
 ---
 
-# ✅ Current Status
+# 🎉 Final Summary
 
-| Feature        | Status      |
-| -------------- | ----------- |
-| Authentication | ✅ Complete |
-| Dashboard UI   | ✅ Complete |
-| Create Post    | ✅ Complete |
-| Manage Posts   | ✅ Complete |
-| Edit Post      | ✅ Complete |
-| Profile System | ✅ Complete |
-| Avatar Upload  | ✅ Complete |
-| Theme Toggle   | ✅ Complete |
-| Navbar Sync    | ✅ Complete |
+This project has evolved into a **fully functional CMS** with:
+
+* Real authentication
+* Admin dashboard
+* Public blog system
+* Author integration
+* Clean UI/UX
+* Proper routing system
 
 ---
 
 # 👨‍💻 Author
 
-Developed as part of a full-stack learning project.
-Focused on building a  **real-world CMS with production-like features** .
-
----
-
-# ⭐ Final Note
-
-This project has evolved from a basic CRUD app into a  **fully functional CMS with advanced UI and real-time features** .
+Built as a **full-stack learning project** focusing on real-world architecture and features.
 
 ---
