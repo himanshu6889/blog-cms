@@ -30,16 +30,6 @@ app.use("/api/users", userRoutes);
 
 // test route
 app.get("/", (req, res) => {
-  res.send("API Running...");
-});
-
-// DB connection
-pool.connect()
-  .then(() => console.log("PostgreSQL Connected"))
-  .catch(err => console.error("DB Connection Error:", err));
-
-// test route
-app.get("/", (req, res) => {
   res.send("Backend is LIVE 🚀");
 });
 
