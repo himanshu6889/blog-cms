@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_BASE from "../../api";
 
 export default function Profile() {
   const [user, setUser] = useState({
@@ -12,7 +13,7 @@ export default function Profile() {
 
   // FETCH PROFILE
   useEffect(() => {
-    fetch("http://localhost:5000/api/users/me", {
+    fetch(`${API_BASE}/api/users/me`, {
       headers: {
         Authorization: "Bearer " + token,
       },
@@ -25,7 +26,7 @@ export default function Profile() {
   // UPDATE PROFILE
   const handleUpdate = async () => {
     try {
-      const res = await fetch("http://localhost:5000/api/users/me", {
+      const res = await fetch(`${API_BASE}/api/users/me`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
@@ -79,7 +80,7 @@ export default function Profile() {
                 formData.append("avatar", file);
 
                 try {
-                  const res = await fetch("http://localhost:5000/api/upload", {
+                  const res = await fetch(`${API_BASE}/api/upload`, {
                     method: "POST",
                     body: formData,
                   });

@@ -7,12 +7,14 @@ import {
   FaChartLine
 } from "react-icons/fa";
 
+import API_BASE from "../../api";
+
 export default function Dashboard() {
 
   const [posts, setPosts] = useState([]);
   
   useEffect(() => {
-  fetch("http://localhost:5000/api/posts", {
+  fetch(`${API_BASE}/api/posts`, {
     headers: {
       Authorization: `Bearer ${localStorage.getItem("token")}`,
     },

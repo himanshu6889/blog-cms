@@ -2,6 +2,8 @@ import { useParams, useNavigate } from "react-router-dom";
 import { useEffect, useState, useRef } from "react";
 import Editor from "../../editor/Editor";
 
+import API_BASE from "../../api";
+
 export default function EditPost() {
   const navigate = useNavigate();
   const { slug } = useParams();
@@ -14,7 +16,7 @@ export default function EditPost() {
     const fetchPost = async () => {
       try {
         setIsFetching(true);
-        const res = await fetch("http://localhost:5000/api/posts", {
+        const res = await fetch(`${API_BASE}/api/posts`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -153,7 +155,7 @@ export default function EditPost() {
     if (!title.trim()) return;
     try {
       setLoading(true);
-      const res = await fetch(`http://localhost:5000/api/posts/${currentPost.id}`, {
+      const res = await fetch(`${API_BASE}/api/posts/${currentPost.id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",

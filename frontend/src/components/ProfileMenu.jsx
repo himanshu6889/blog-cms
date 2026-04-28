@@ -1,5 +1,6 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
+import API_BASE from "../../api";
 
 export default function ProfileMenu() {
   const [user, setUser] = useState(null);
@@ -10,7 +11,7 @@ export default function ProfileMenu() {
   const token = localStorage.getItem("token");
 
   useEffect(() => {
-    fetch("http://localhost:5000/api/users/me", {
+    fetch(`${API_BASE}/api/users/me`, {
       headers: {
         Authorization: "Bearer " + token,
       },
@@ -22,7 +23,7 @@ export default function ProfileMenu() {
 // Listen for profile updates
 useEffect(() => {
   const fetchUser = () => {
-    fetch("http://localhost:5000/api/users/me", {
+    fetch(`${API_BASE}/api/users/me`, {
       headers: {
         Authorization: "Bearer " + token,
       },

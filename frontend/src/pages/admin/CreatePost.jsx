@@ -8,6 +8,8 @@ import {
 } from "react-icons/fa";
 import Editor from "../../editor/Editor";
 
+import API_BASE from "../../api";
+
 const DRAFT_KEY = "create_post_draft";
 const ACCESS_OPTIONS = ["Anyone", "Logged-in Users", "Only Me", "No One"];
 const DEFAULT_ACCESS = {
@@ -361,7 +363,7 @@ export default function CreatePost() {
   useEffect(() => {
     const fetchPosts = async () => {
       try {
-        const res = await fetch("http://localhost:5000/api/posts", {
+        const res = await fetch(`${API_BASE}/api/posts`, {
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
           },
@@ -484,7 +486,7 @@ export default function CreatePost() {
 
     console.log("🚀 Sending post:", postData);
 
-    const res = await fetch("http://localhost:5000/api/posts", {
+    const res = await fetch(`${API_BASE}/api/posts`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",Authorization: `Bearer ${localStorage.getItem("token")}`,

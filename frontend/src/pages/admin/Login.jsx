@@ -4,6 +4,8 @@ import { useNavigate, Link } from "react-router-dom";
 import showIcon from "../../assets/show.svg";
 import hideIcon from "../../assets/hide.svg";
 
+import API_BASE from "../../api";
+
 export default function Login() {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -26,7 +28,7 @@ export default function Login() {
     console.log("Login clicked"); // for debugging
   try {
     const res = await fetch(
-      "http://localhost:5000/api/auth/login",
+      `${API_BASE}/api/auth/login`,
       {
         method: "POST",
         headers: {

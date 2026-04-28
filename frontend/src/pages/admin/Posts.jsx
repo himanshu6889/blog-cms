@@ -6,6 +6,8 @@
     FaFileAlt, FaLayerGroup, FaCalendarAlt, FaEye, FaPen
   } from "react-icons/fa";
 
+  import API_BASE from "../../api";
+
   export default function Posts() {
     const [posts, setPosts] = useState([]);
     const safePosts = Array.isArray(posts) ? posts : [];
@@ -19,7 +21,7 @@
     useEffect(() => {
       const fetchPosts = async () => {
         try {
-          const res = await fetch("http://localhost:5000/api/posts", {
+          const res = await fetch(`${API_BASE}/api/posts`, {
             headers: {
               Authorization: `Bearer ${localStorage.getItem("token")}`,
             },
@@ -105,7 +107,7 @@
     try {
       // delete from backend
       for (let id of deleteIds) {
-        await fetch(`http://localhost:5000/api/posts/${id}`, {
+        await fetch(`${API_BASE}/api/posts/${id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -114,7 +116,7 @@
       }
 
       // refetch updated posts
-      const res = await fetch("http://localhost:5000/api/posts", {
+      const res = await fetch(`${API_BASE}/api/posts`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },

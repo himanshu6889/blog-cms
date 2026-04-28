@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
+import API_BASE from "../../api";
 
 export default function BlogDetails() {
   const { slug } = useParams();
@@ -13,7 +14,7 @@ export default function BlogDetails() {
   try {
     setLoading(true);
 
-    const res = await fetch(`http://localhost:5000/api/posts/${slug}`);
+    const res = await fetch(`${API_BASE}/api/posts/${slug}`);
     const data = await res.json();
 
     console.log("POST DATA:", data);
