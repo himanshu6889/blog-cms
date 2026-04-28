@@ -18,7 +18,7 @@ router.get("/:slug", getPostBySlug);
 // PROTECTED ROUTES
 
 router.post("/", verifyToken, createPost);
-router.get("/", verifyToken, getPosts);
+router.get("/", getPosts);
 router.put("/:id", verifyToken, updatePost);    
 router.delete("/:id", verifyToken, deletePost);
 
