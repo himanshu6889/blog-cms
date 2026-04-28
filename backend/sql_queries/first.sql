@@ -16,6 +16,15 @@ CREATE TABLE IF NOT EXISTS posts (
 );
 
 ALTER TABLE posts ADD COLUMN user_id INTEGER;
+ALTER TABLE posts
+ADD COLUMN IF NOT EXISTS user_id INTEGER REFERENCES users(id);
+
+
+ALTER TABLE posts 
+ADD CONSTRAINT fk_posts_user_id 
+FOREIGN KEY (user_id) REFERENCES users(id) 
+ON DELETE CASCADE;
+
 
 -- all post view
 SELECT * FROM POSTS
