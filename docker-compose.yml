@@ -31,7 +31,7 @@ services:
       HASURA_GRAPHQL_METADATA_DATABASE_URL: postgres://postgres:1234@postgres:5432/blogcms
       HASURA_GRAPHQL_ENABLE_CONSOLE: "true"
       HASURA_GRAPHQL_DEV_MODE: "true"
-      HASURA_GRAPHQL_ADMIN_SECRET: hasuraadminsecret
+      HASURA_GRAPHQL_ADMIN_SECRET: 123456
       HASURA_GRAPHQL_CORS_DOMAIN: "*"
 
   backend:
