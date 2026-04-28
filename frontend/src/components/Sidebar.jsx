@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink, useNavigate } from "react-router-dom"; // useNavigate still used for logout
 import {
   FaHome,
   FaPen,
@@ -90,19 +90,7 @@ export default function Sidebar({ pinned, setPinned }) {
   </>
 )}
 
-        <button
-          onClick={() => navigate("/")}
-          className={`
-            w-full flex items-center
-            ${expanded ? "gap-3 px-4" : "justify-center px-0"}
-            py-3 rounded-2xl font-medium
-            text-slate-300 hover:bg-slate-800/80 hover:text-white
-            transition-all duration-300
-          `}
-        >
-          <span className="text-[15px] flex-shrink-0"><FaGlobe /></span>
-          {expanded && <span className="truncate">View Website</span>}
-        </button>
+        <SidebarItem to="/" icon={<FaGlobe />} label="View Website" expanded={expanded} end />
       </nav>
 
       {/* BOTTOM — hovering here also expands */}

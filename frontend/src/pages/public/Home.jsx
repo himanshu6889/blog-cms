@@ -148,10 +148,25 @@ useEffect(() => {
               <p className="text-slate-600 dark:text-slate-400 mt-3">
                 {featured.description || "No description available."}
               </p>
-
-              <div className="flex justify-between mt-6 text-sm text-slate-500 dark:text-slate-400">
+              <div className="flex justify-between items-center mt-6 text-sm text-slate-500 dark:text-slate-400">
+                {/* DATE */}
                 <span>{new Date(featured.created_at).toLocaleDateString()}</span>
-                <span>{getReadingTime(featured.content)} min read</span>
+
+                {/* AUTHOR + READING TIME */}
+                <div className="flex items-center gap-4">
+                  <div className="flex items-center gap-2">
+                    {featured.author_avatar ? (
+                      <img src={featured.author_avatar} alt={featured.author_name} className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
+                    ) : (
+                      <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0">
+                        {featured.author_name?.charAt(0) || "?"}
+                      </div>
+                    )}
+                    <span>{featured.author_name || "Unknown"}</span>
+                  </div>
+                  <span className="text-slate-300 dark:text-slate-600">·</span>
+                  <span>{getReadingTime(featured.content)} min read</span>
+                </div>
               </div>
             </div>
           </div>
@@ -190,13 +205,29 @@ useEffect(() => {
                 <p className="text-sm text-slate-500 dark:text-slate-400 mt-2 line-clamp-2 flex-1">
                   {post.description || "No description available."}
                 </p>
-
-                <div className="flex justify-between mt-4 text-xs text-slate-400 dark:text-slate-500">
+                
+                <div className="mt-4 text-xs text-slate-400 dark:text-slate-500 flex justify-between items-center">
+                  {/* DATE */}
                   <span>{new Date(post.created_at).toLocaleDateString()}</span>
-                  <span>{getReadingTime(post.content)} min read</span>
+
+                  {/* AUTHOR + READING */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-1.5">
+                      {post.author_avatar ? (
+                        <img src={post.author_avatar} alt={post.author_name} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
+                      ) : (
+                        <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0">
+                          {post.author_name?.charAt(0) || "?"}
+                        </div>
+                      )}
+                      <span>{post.author_name || "Unknown"}</span>
+                    </div>
+                    <span className="text-slate-300 dark:text-slate-600">·</span>
+                    <span>{getReadingTime(post.content)} min read</span>
+                  </div>
+                </div>
                 </div>
               </div>
-            </div>
           </Link>
         ))}
       </div>

@@ -85,16 +85,26 @@ export const deletePost = async (req, res) => {
 };
 
 
-// GET PUBLIC POSTS (no auth required)
+// GET PUBLIC POSTS (no auth required) - includes author info
 export const getPublicPosts = async (req, res) => {
   try {
     const result = await pool.query(`
-      SELECT id, title, slug, category, thumbnail, description, content, created_at
+      SELECT 
+        posts.id,
+        posts.title,
+        posts.slug,
+        posts.category,
+        posts.thumbnail,
+        posts.description,
+        posts.content,
+        posts.created_at,
+        users.name AS author_name,
+        users.avatar AS author_avatar
       FROM posts
-      ORDER BY created_at DESC
+      LEFT JOIN users ON posts.user_id = users.id
+      ORDER BY posts.created_at DESC
     `);
 
-    
     res.json(result.rows);
   } catch (err) {
     console.error("PUBLIC POSTS ERROR:", err);
@@ -102,15 +112,20 @@ export const getPublicPosts = async (req, res) => {
   }
 };
 
-// GET SINGLE POST BY SLUG (public)
+// GET SINGLE POST BY SLUG (public) - includes author info
 export const getPostBySlug = async (req, res) => {
   const { slug } = req.params;
 
   try {
-    const result = await pool.query(
-      `SELECT * FROM posts WHERE slug = $1`,
-      [slug]
-    );
+    const result = await pool.query(`
+      SELECT 
+        posts.*,
+        users.name AS author_name,
+        users.avatar AS author_avatar
+      FROM posts
+      LEFT JOIN users ON posts.user_id = users.id
+      WHERE posts.slug = $1
+    `, [slug]);
 
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Post not found" });

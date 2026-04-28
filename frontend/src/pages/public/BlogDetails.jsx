@@ -121,6 +121,25 @@ fetchPost();
         <div className="flex flex-wrap gap-5 text-slate-500 dark:text-slate-400 text-sm mb-6">
           <span>📅 {formatDate(post.created_at)}</span>
           <span>🕒 {formatTime(post.created_at)}</span>
+          
+          <div className="flex items-center gap-2">
+
+            {/* Avatar */}
+            {post.author_avatar ? (
+              <img src={post.author_avatar} alt={post.author_name} className="w-7 h-7 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-7 h-7 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0">
+                {post.author_name?.charAt(0) || "?"}
+              </div>
+            )}
+
+              {/* Name */}
+              <span className="font-medium">
+                {post.author_name || "Unknown"}
+                </span>
+                
+                </div>
+
         </div>
 
         {post.description && (
