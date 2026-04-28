@@ -79,7 +79,12 @@ export default function Dashboard() {
   const formatDate = (value) => {
     const date = new Date(value);
     if (isNaN(date)) return "";
-    return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+    return date.toLocaleDateString("en-IN", {
+      day: "2-digit",
+      month: "short",
+      year: "numeric",
+      timeZone: "Asia/Kolkata",
+    });
   };
 
   const chartHeight = (value) => {

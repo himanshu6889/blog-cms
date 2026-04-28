@@ -43,14 +43,25 @@ fetchPost();
     });
   };
 
-  const formatTime = (value) => {
-    const date = new Date(value);
-    if (isNaN(date)) return "";
-    return date.toLocaleTimeString("en-IN", {
-      hour: "2-digit",
-      minute: "2-digit",
-      hour12: true,
-    });
+  const getRelativeTime = (value) => {
+    const createdAt = new Date(value);
+    const now = new Date();
+    const diffMs = now - createdAt;
+
+    if (Number.isNaN(createdAt.getTime()) || diffMs < 0) return "just now";
+
+    const minutes = Math.floor(diffMs / 60000);
+    if (minutes < 1) return "just now";
+    if (minutes < 60) return `${minutes} min ago`;
+
+    const hours = Math.floor(minutes / 60);
+    if (hours < 24) return `${hours} hr ago`;
+
+    const days = Math.floor(hours / 24);
+    if (days < 7) return `${days} day${days === 1 ? "" : "s"} ago`;
+
+    const weeks = Math.floor(days / 7);
+    return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
   };
 
   //  Show spinner while fetching — not "Post Not Found"
@@ -119,8 +130,7 @@ fetchPost();
         </h1>
 
         <div className="flex flex-wrap gap-5 text-slate-500 dark:text-slate-400 text-sm mb-6">
-          <span>📅 {formatDate(post.created_at)}</span>
-          <span>🕒 {formatTime(post.created_at)}</span>
+          <span>🕒 Posted {getRelativeTime(post.created_at)}</span>
           
           <div className="flex items-center gap-2">
 
@@ -198,7 +208,7 @@ fetchPost();
                   </h3>
 
                   <p className="text-slate-500 dark:text-slate-400 text-sm mt-2">
-                    {formatDate(item.created_at)}
+                    Posted {getRelativeTime(item.created_at)}
                   </p>
                 </div>
               </Link>
