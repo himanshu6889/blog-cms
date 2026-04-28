@@ -16,8 +16,8 @@ export const createPost = async (req, res) => {
     const userId = req.user.id; // Get user ID from auth middleware
     const result = await pool.query(
       `INSERT INTO posts 
-      (title, slug, category, thumbnail, description, content, tags, user_id)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+      (title, slug, category, thumbnail, description, content, tags, user_id, created_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8, NOW())
       RETURNING *`,
       [title, slug, category, thumbnail, description, content, tags, userId]
     );

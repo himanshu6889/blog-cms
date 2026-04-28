@@ -30,39 +30,42 @@
           } else {
             setPosts([]);
           }
-          
+
           console.log("Posts API:", data); // Debug log
+        } catch (err) {
+          console.error("Error fetching posts:", err);
+          setPosts([]);
+        }
+      };
 
-      //  Always ensure array
-
-      if (Array.isArray(data)) {
-        setPosts(data);
-      } else {
-        setPosts([]);
-      }
-
-    } catch (err) {
-      console.error("Error fetching posts:", err);
-      setPosts([]);
-    }
-  };
-
-  fetchPosts();
-}, []);
+      fetchPosts();
+    }, []);
 
 
 
-    const formatDate = (value) => {
+    const formatDateParts = (value) => {
       const date = new Date(value);
-      if (isNaN(date)) return "-";
-      return date.toLocaleDateString("en-IN", { day: "2-digit", month: "short", year: "numeric" });
+      if (Number.isNaN(date.getTime())) return { date: "-", time: "-" };
+
+      return {
+        date: date.toLocaleDateString("en-IN", {
+          day: "2-digit",
+          month: "short",
+          year: "numeric",
+          timeZone: "Asia/Kolkata",
+        }),
+        time: date.toLocaleTimeString("en-IN", {
+          hour: "2-digit",
+          minute: "2-digit",
+          hour12: true,
+          timeZone: "Asia/Kolkata",
+        }),
+      };
     };
 
-    const formatTime = (value) => {
-      const date = new Date(value);
-      if (isNaN(date)) return "-";
-      return date.toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit", hour12: true });
-    };
+    const formatDate = (value) => formatDateParts(value).date;
+
+    const formatTime = (value) => formatDateParts(value).time;
 
     const uniqueCategories = [
   ...new Set(
@@ -81,10 +84,10 @@
     const filteredPosts = useMemo(() => {
       let data = safePosts.filter((post) => post.title?.toLowerCase().includes(search.toLowerCase()));
       switch (sortBy) {
-        case "oldest": data.sort((a, b) => Number(a.created_at || 0) - Number(b.created_at || 0)); break;
+        case "oldest": data.sort((a, b) => new Date(a.created_at).getTime() - new Date(b.created_at).getTime()); break;
         case "az": data.sort((a, b) => a.title.localeCompare(b.title)); break;
         case "za": data.sort((a, b) => b.title.localeCompare(a.title)); break;
-        default: data.sort((a, b) => Number(b.created_at || 0) - Number(a.created_at || 0));
+        default: data.sort((a, b) => new Date(b.created_at).getTime() - new Date(a.created_at).getTime());
       }
       return data;
     }, [safePosts, search, sortBy]);

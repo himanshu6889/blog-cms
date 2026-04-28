@@ -12,8 +12,12 @@ CREATE TABLE IF NOT EXISTS posts (
   parent_post TEXT,
   access TEXT,
   edit_access TEXT,
-  created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+  created_at TIMESTAMPTZ DEFAULT NOW()
 );
+
+ALTER TABLE posts
+ALTER COLUMN created_at TYPE TIMESTAMPTZ
+USING created_at AT TIME ZONE 'UTC';
 
 ALTER TABLE posts ADD COLUMN user_id INTEGER;
 
@@ -44,3 +48,9 @@ SELECT * FROM users;
 
 -- public post
 SELECT id, title, slug FROM posts;
+
+
+ALTER TABLE posts 
+ADD CONSTRAINT fk_posts_user_id 
+FOREIGN KEY (user_id) REFERENCES users(id) 
+ON DELETE CASCADE;

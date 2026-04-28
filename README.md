@@ -238,6 +238,16 @@ http://localhost:5000/uploads/<filename>
 
 ```bash
 cd backend
+
+```
+
+## Hasura
+
+Hasura runs alongside the app stack and connects to the same Postgres database.
+
+* Console: `http://localhost:8080`
+* Admin secret: `hasuraadminsecret`
+* It can be used to track tables, explore data, and manage schema metadata.
 npm install
 npm run dev
 ```
