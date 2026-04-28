@@ -210,7 +210,7 @@ export default function Dashboard() {
                 Manage Posts
               </Link>
               <Link
-                to="/site"
+                to="/"
                 className="flex items-center justify-center gap-2 bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 text-slate-800 dark:text-slate-200 py-3 rounded-2xl font-semibold transition"
               >
                 <FaGlobe />

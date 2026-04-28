@@ -142,23 +142,28 @@ fetchPost();
 
         </div>
 
+      </section>
+
+      {/* Description + Content — same width, same card style */}
+      <section className="w-full px-8 pb-16 flex flex-col gap-6">
+
+        {/* Description — transparent, blends with page background */}
         {post.description && (
-          <p className="text-xl text-slate-600 dark:text-slate-400 leading-relaxed max-w-4xl">
+          <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed px-2 [word-break:break-word] [overflow-wrap:anywhere]">
             {post.description}
           </p>
         )}
-      </section>
 
-      {/* Content */}
-      <section className="w-full px-8 pb-16">
-        <div className="bg-white dark:bg-slate-800 rounded-3xl shadow-xl dark:shadow-slate-900 p-8 md:p-12">
+        {/* Content Box */}
+        <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl dark:shadow-slate-900 p-8 md:p-12 overflow-hidden">
           <div
-            className="prose prose-lg dark:prose-invert max-w-none prose-img:rounded-2xl prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-a:text-blue-600 dark:prose-a:text-blue-400"
+            className="prose prose-lg dark:prose-invert max-w-none prose-img:rounded-2xl prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 [word-break:break-word] [overflow-wrap:anywhere]"
             dangerouslySetInnerHTML={{
               __html: post.content || "<p>No content found.</p>",
             }}
           />
         </div>
+
       </section>
 
       {/* Related Posts */}
