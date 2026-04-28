@@ -113,7 +113,7 @@ export default function Login() {
         {/* Username */}
         <input
           type="text"
-          placeholder="Username"
+          placeholder="Email"
           value={username}
           onChange={(e) => {
             setUsername(e.target.value);
