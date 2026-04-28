@@ -95,7 +95,7 @@ export default function Profile() {
                   console.error("Upload error:", err);
                 }
               }}
-              className="w-full p-2 mt-1 bg-slate-200 dark:bg-gray-700 text-black dark:text-white rounded"
+              className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
             />
 
             {user.avatar && (
