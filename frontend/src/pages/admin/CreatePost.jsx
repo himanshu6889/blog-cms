@@ -8,7 +8,7 @@ import {
 } from "react-icons/fa";
 import Editor from "../../editor/Editor";
 
-import API_BASE from "../api";
+import API_BASE from "../../api"; 
 
 const DRAFT_KEY = "create_post_draft";
 const ACCESS_OPTIONS = ["Anyone", "Logged-in Users", "Only Me", "No One"];

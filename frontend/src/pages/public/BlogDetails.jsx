@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import API_BASE from "../api";
+import API_BASE from "../../api"; 
 
 export default function BlogDetails() {
   const { slug } = useParams();

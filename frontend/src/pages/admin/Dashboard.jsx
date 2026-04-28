@@ -7,7 +7,7 @@ import {
   FaChartLine
 } from "react-icons/fa";
 
-import API_BASE from "../api";
+import API_BASE from "../../api"; 
 
 export default function Dashboard() {
 
