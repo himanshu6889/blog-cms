@@ -20,13 +20,14 @@ export default function Drafts() {
 
   const fetchDrafts = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/drafts`, {
+      const res = await fetch(`${API_BASE}/api/posts`, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
       });
       const data = await res.json();
-      setDrafts(Array.isArray(data) ? data : []);
+      // drafts live in the same posts table — filter by status
+      setDrafts(Array.isArray(data) ? data.filter((p) => p.status === "draft") : []);
     } catch (err) {
       console.error("Error fetching drafts:", err);
       setDrafts([]);
@@ -126,7 +127,7 @@ export default function Drafts() {
   const confirmDelete = async () => {
     try {
       for (let id of deleteIds) {
-        await fetch(`${API_BASE}/api/drafts/${id}`, {
+        await fetch(`${API_BASE}/api/posts/${id}`, {
           method: "DELETE",
           headers: {
             Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -145,11 +146,13 @@ export default function Drafts() {
 
   const publishDraft = async (id) => {
     try {
-      await fetch(`${API_BASE}/api/drafts/${id}/publish`, {
-        method: "PATCH",
+      await fetch(`${API_BASE}/api/posts/${id}`, {
+        method: "PUT",
         headers: {
+          "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        body: JSON.stringify({ status: "published" }),
       });
       triggerToast("Published Successfully");
       await fetchDrafts();
