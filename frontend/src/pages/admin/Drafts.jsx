@@ -146,14 +146,38 @@ export default function Drafts() {
 
   const publishDraft = async (id) => {
     try {
-      await fetch(`${API_BASE}/api/posts/${id}`, {
+      // find the full draft from already-loaded state so we don't wipe content
+      const draft = safeDrafts.find((d) => d.id === id);
+      if (!draft) return;
+
+      const res = await fetch(`${API_BASE}/api/posts/${id}`, {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ status: "published" }),
+        body: JSON.stringify({
+          title:       draft.title,
+          slug:        draft.slug,
+          category:    draft.category    || "General",
+          thumbnail:   draft.thumbnail   || "",
+          description: draft.description || "",
+          content:     draft.content     || "",
+          tags:        draft.tags        || [],
+          parent_post: draft.parent_post || null,
+          access:      draft.access      || "Anyone",
+          edit_access: draft.edit_access || "Logged-in Users",
+          status:      "published",
+        }),
       });
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Publish error:", err);
+        triggerToast("Publish Failed");
+        return;
+      }
+
       triggerToast("Published Successfully");
       await fetchDrafts();
     } catch (err) {

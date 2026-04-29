@@ -45,7 +45,7 @@ useEffect(() => {
   // FILTER 
   const filteredPosts = sortedPosts.filter((post) => {
     const matchSearch =
-      post.title
+      (post.title || "")
         .toLowerCase()
         .includes(search.toLowerCase());
 
