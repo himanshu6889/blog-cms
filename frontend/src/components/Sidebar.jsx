@@ -4,6 +4,7 @@ import {
   FaHome,
   FaPen,
   FaFolder,
+  FaFileAlt,
   FaGlobe,
   FaSignOutAlt,
   FaBars,
@@ -70,6 +71,7 @@ export default function Sidebar({ pinned, setPinned }) {
           <SidebarItem to="/admin" icon={<FaHome />} label="Dashboard" expanded={expanded} end />
           <SidebarItem to="/admin/create-post" icon={<FaPen />} label="Create Post" expanded={expanded} />
           <SidebarItem to="/admin/posts" icon={<FaFolder />} label="All Posts" expanded={expanded} />
+          <SidebarItem to="/admin/drafts" icon={<FaFileAlt />} label="Drafts" expanded={expanded} />
           </>
 )}
 
