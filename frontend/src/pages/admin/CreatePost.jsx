@@ -745,7 +745,7 @@ const parentOptions = [
               </div>
             </div>
             <div className="rounded-2xl border border-slate-200 dark:border-slate-600 overflow-hidden min-h-[460px]">
-              <Editor key={editorKey} onUpdate={setContent} initialContent={editorInitialContent} />
+              <Editor key={editorKey} onUpdate={setContent} initialHtml={editorInitialContent} />
             </div>
           </div>
 
