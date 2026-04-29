@@ -78,17 +78,17 @@ export default function Drafts() {
 
   const filteredDrafts = useMemo(() => {
     let data = safeDrafts.filter((d) =>
-      d.title?.toLowerCase().includes(search.toLowerCase())
+      (d.title || "").toLowerCase().includes(search.toLowerCase())
     );
     switch (sortBy) {
       case "oldest":
         data.sort((a, b) => new Date(a.updated_at || a.created_at) - new Date(b.updated_at || b.created_at));
         break;
       case "az":
-        data.sort((a, b) => a.title.localeCompare(b.title));
+        data.sort((a, b) => (a.title || "").localeCompare(b.title || ""));
         break;
       case "za":
-        data.sort((a, b) => b.title.localeCompare(a.title));
+        data.sort((a, b) => (b.title || "").localeCompare(a.title || ""));
         break;
       default:
         data.sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
