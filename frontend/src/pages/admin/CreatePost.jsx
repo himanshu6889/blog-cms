@@ -522,6 +522,7 @@ export default function CreatePost() {
       parent_post: parent === "none" ? null : parent,
       access: access.read,
       edit_access: access.edit,
+      status: "published",
     };
 
     console.log("🚀 Sending post:", postData);
