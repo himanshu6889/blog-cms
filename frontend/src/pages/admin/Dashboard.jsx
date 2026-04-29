@@ -21,38 +21,41 @@ export default function Dashboard() {
   })
     .then((res) => res.json())
     .then((data) => {
-      console.log("API Response:", data); // debug
-
-      //  Ensure it's always an array
+      console.log("API Response:", data);
       if (Array.isArray(data)) {
         setPosts(data);
       } else {
-        setPosts([]); // fallback
+        setPosts([]);
       }
     })
     .catch((err) => console.error(err));
   }, []);
 
+  const publishedPosts = posts.filter((p) => p.status === "published");
+  const draftPosts     = posts.filter((p) => p.status === "draft");
+
   const categories = [
     ...new Set(
-      posts.map((post) =>
+      publishedPosts.map((post) =>
         (post.category?.trim() || "General").toLowerCase()
       )
     )
   ];
 
-  const recentPosts = [...posts].reverse().slice(0, 5);
+  const recentPosts = [...posts]
+    .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
+    .slice(0, 5);
 
   const currentDate  = new Date();
   const currentMonth = currentDate.getMonth();
   const currentYear  = currentDate.getFullYear();
 
-  const thisMonthPosts = posts.filter((post) => {
+  const thisMonthPosts = publishedPosts.filter((post) => {
     const d = new Date(post.created_at);
     return d.getMonth() === currentMonth && d.getFullYear() === currentYear;
   }).length;
 
-  const drafts = 0;
+  const drafts = draftPosts.length;
 
   const [postCount,     setPostCount]     = useState(0);
   const [categoryCount, setCategoryCount] = useState(0);
@@ -60,15 +63,15 @@ export default function Dashboard() {
   const [draftCount,    setDraftCount]    = useState(0);
 
   useEffect(() => {
-    if (posts.length > 0) {
-      animateCounter(posts.length, setPostCount);
-      animateCounter(categories.length, setCategoryCount);
-      animateCounter(thisMonthPosts, setMonthCount);
-      animateCounter(drafts, setDraftCount);
-    }
+    animateCounter(publishedPosts.length, setPostCount);
+    animateCounter(categories.length, setCategoryCount);
+    animateCounter(thisMonthPosts, setMonthCount);
+    animateCounter(drafts, setDraftCount);
   }, [posts]);
 
   const animateCounter = (target, setter) => {
+    setter(0);
+    if (target === 0) return;
     let current = 0;
     const step  = Math.max(1, Math.ceil(target / 30));
     const timer = setInterval(() => {
@@ -90,8 +93,8 @@ export default function Dashboard() {
   };
 
   const chartHeight = (value) => {
-    if (value === 0) return "0%";
-    const max = Math.max(posts.length, categories.length, thisMonthPosts, 1);
+    if (value === 0) return "4px";
+    const max = Math.max(publishedPosts.length, categories.length, thisMonthPosts, drafts, 1);
     return `${(value / max) * 100}%`;
   };
 
@@ -119,10 +122,10 @@ export default function Dashboard() {
 
       {/* STAT CARDS */}
       <div className="grid md:grid-cols-2 xl:grid-cols-4 gap-6">
-        <StatCard title="Total Posts"  value={postCount}     sub="Published posts"      color="from-blue-600 to-indigo-600"   border="from-blue-500 to-indigo-500" />
-        <StatCard title="Categories"   value={categoryCount} sub="Used categories"       color="from-green-500 to-emerald-600" border="from-green-500 to-emerald-600" />
-        <StatCard title="This Month"   value={monthCount}    sub="Published this month"  color="from-purple-500 to-pink-500"   border="from-purple-500 to-pink-500" />
-        <StatCard title="Drafts"       value={draftCount}    sub="Saved drafts"          color="from-orange-400 to-amber-500"  border="from-orange-400 to-amber-500" />
+        <StatCard title="Published"    value={postCount}     sub="Live posts"            color="from-blue-600 to-indigo-600"   border="from-blue-500 to-indigo-500" />
+        <StatCard title="Categories"   value={categoryCount} sub="Used categories"        color="from-green-500 to-emerald-600" border="from-green-500 to-emerald-600" />
+        <StatCard title="This Month"   value={monthCount}    sub="Published this month"   color="from-purple-500 to-pink-500"   border="from-purple-500 to-pink-500" />
+        <StatCard title="Drafts"       value={draftCount}    sub="Saved drafts"           color="from-orange-400 to-amber-500"  border="from-orange-400 to-amber-500" />
       </div>
 
       {/* RECENT POSTS + ANALYTICS */}
@@ -136,7 +139,7 @@ export default function Dashboard() {
                 Recent Posts
               </h2>
               <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
-                Latest published posts
+                Your latest posts
               </p>
             </div>
             <Link to="/admin/posts" className="text-blue-600 dark:text-blue-400 font-semibold hover:underline">
@@ -160,17 +163,32 @@ export default function Dashboard() {
                       {post.title?.charAt(0)}
                     </div>
                     <div>
-                      <h3 className="font-semibold text-slate-900 dark:text-white">
-                        {post.title}
-                      </h3>
+                      <div className="flex items-center gap-2">
+                        <h3 className="font-semibold text-slate-900 dark:text-white">
+                          {post.title}
+                        </h3>
+                        <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full uppercase tracking-wide ${
+                          post.status === "published"
+                            ? "bg-emerald-100 dark:bg-emerald-900/30 text-emerald-600 dark:text-emerald-400"
+                            : "bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400"
+                        }`}>
+                          {post.status}
+                        </span>
+                      </div>
                       <p className="text-sm text-slate-500 dark:text-slate-400 mt-1">
                         {formatDate(post.created_at)}
                       </p>
                     </div>
                   </div>
-                  <Link to={`/blog/${post.slug}`} className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
-                    View
-                  </Link>
+                  {post.status === "published" ? (
+                    <Link to={`/blog/${post.slug}`} className="text-blue-600 dark:text-blue-400 font-medium hover:underline">
+                      View
+                    </Link>
+                  ) : (
+                    <Link to={`/admin/edit-post/${post.slug}`} className="text-slate-500 dark:text-slate-400 font-medium hover:underline">
+                      Edit
+                    </Link>
+                  )}
                 </div>
               ))}
             </div>
@@ -189,10 +207,10 @@ export default function Dashboard() {
               </h2>
             </div>
             <div className="h-60 flex items-end justify-between gap-4">
-              <Bar label="Posts"      value={posts.length}      height={chartHeight(posts.length)}      color="from-blue-500 to-indigo-500" />
-              <Bar label="Categories" value={categories.length} height={chartHeight(categories.length)} color="from-green-500 to-emerald-500" />
-              <Bar label="Month"      value={thisMonthPosts}    height={chartHeight(thisMonthPosts)}    color="from-purple-500 to-pink-500" />
-              <Bar label="Drafts"     value={drafts}            height={chartHeight(drafts)}            color="from-orange-400 to-amber-500" />
+              <Bar label="Published"  value={publishedPosts.length} height={chartHeight(publishedPosts.length)} color="from-blue-500 to-indigo-500" />
+              <Bar label="Categories" value={categories.length}     height={chartHeight(categories.length)}     color="from-green-500 to-emerald-500" />
+              <Bar label="Month"      value={thisMonthPosts}        height={chartHeight(thisMonthPosts)}        color="from-purple-500 to-pink-500" />
+              <Bar label="Drafts"     value={drafts}               height={chartHeight(drafts)}               color="from-orange-400 to-amber-500" />
             </div>
           </div>
 
