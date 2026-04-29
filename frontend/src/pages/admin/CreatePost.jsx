@@ -359,6 +359,7 @@ export default function CreatePost() {
   const [lastSaved, setLastSaved] = useState("");
   const [draftBanner, setDraftBanner] = useState(false);
   const [draftTimestamp, setDraftTimestamp] = useState("");
+  const [savedPostId, setSavedPostId] = useState(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -462,6 +463,7 @@ export default function CreatePost() {
 
       const data = await res.json();
       console.log("✅ Draft saved:", data);
+      setSavedPostId(data.id); // track so publish can update instead of create
       showSuccessToast("Draft Saved", "Saved to dashboard 🚀");
     } catch (err) {
       console.error("Draft save error:", err);
@@ -488,7 +490,7 @@ export default function CreatePost() {
   const resetAll = () => {
     setTitle(""); setSlug(""); setCategory(""); setThumbnail(""); setDescription("");
     setContent(""); setTags(""); setParent("none"); setAssocGroup("none");
-    setAccess(DEFAULT_ACCESS); setEditorInitialContent(""); setEditorKey((p) => p + 1); setLastSaved("");
+    setAccess(DEFAULT_ACCESS); setEditorInitialContent(""); setEditorKey((p) => p + 1); setLastSaved(""); setSavedPostId(null);
   };
 
     // const persistPost = () => {
@@ -527,10 +529,14 @@ export default function CreatePost() {
 
     console.log("🚀 Sending post:", postData);
 
-    const res = await fetch(`${API_BASE}/api/posts`, {
-      method: "POST",
+    // If a draft was already saved to DB, update it — don't create a duplicate
+    const url    = savedPostId ? `${API_BASE}/api/posts/${savedPostId}` : `${API_BASE}/api/posts`;
+    const method = savedPostId ? "PUT" : "POST";
+
+    const res = await fetch(url, {
+      method,
       headers: {
-        "Content-Type": "application/json",Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}`,
       },
       body: JSON.stringify(postData),
     });

@@ -54,15 +54,22 @@ export const getPosts = async (req, res) => {
 // UPDATE POST
 export const updatePost = async (req, res) => {
   const { id } = req.params;
-  const { title, category, description, content } = req.body;
+  const {
+    title, slug, category, thumbnail, description,
+    content, tags, status, parent_post, access, edit_access,
+  } = req.body;
 
   try {
     const result = await pool.query(
       `UPDATE posts
-       SET title=$1, category=$2, description=$3, content=$4
-       WHERE id=$5 AND user_id=$6
+       SET title=$1, slug=$2, category=$3, thumbnail=$4, description=$5,
+           content=$6, tags=$7, status=$8, parent_post=$9, access=$10,
+           edit_access=$11
+       WHERE id=$12 AND user_id=$13
        RETURNING *`,
-      [title, category, description, content, id, req.user.id]
+      [title, slug, category, thumbnail, description,
+       content, tags, status, parent_post || null, access, edit_access,
+       id, req.user.id]
     );
 
     if (result.rows.length === 0) {
@@ -71,8 +78,8 @@ export const updatePost = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error("UPDATE ERROR:", err);
-    res.status(500).json({ error: "Error updating post" });
+    console.error("UPDATE ERROR:", err.message);
+    res.status(500).json({ error: err.message });
   }
 };
 
