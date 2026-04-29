@@ -10,6 +10,7 @@ import Dashboard from "./pages/admin/Dashboard";
 import CreatePost from "./pages/admin/CreatePost";
 import Posts from "./pages/admin/Posts";
 import EditPost from "./pages/admin/EditPost";
+import Drafts from "./pages/admin/Drafts";
 
 import Login from "./pages/admin/Login";
 import ForgotPassword from "./pages/admin/ForgotPassword";
@@ -76,6 +77,10 @@ const router = createBrowserRouter([
       {
         path: "edit-post/:slug",
         element: <EditPost />
+      },
+      {
+        path: "drafts",               // 👈 NEW
+        element: <Drafts />
       },
       {
         path: "profile",
