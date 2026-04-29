@@ -360,6 +360,7 @@ export default function CreatePost() {
   const [draftBanner, setDraftBanner] = useState(false);
   const [draftTimestamp, setDraftTimestamp] = useState("");
   const [savedPostId, setSavedPostId] = useState(null);
+  const [savedPostSlug, setSavedPostSlug] = useState(null);
 
   useEffect(() => {
     const fetchPosts = async () => {
@@ -431,9 +432,12 @@ export default function CreatePost() {
 
   const saveDraftToDB = async () => {
     try {
+      const isUpdate = !!savedPostId;
       const postData = {
         title,
-        slug: slugify(title || "draft", { lower: true, strict: true }) + "-" + Date.now(),
+        slug: isUpdate
+          ? savedPostSlug
+          : slugify(title || "draft", { lower: true, strict: true }) + "-" + Date.now(),
         category: category || "General",
         thumbnail,
         description,
@@ -445,8 +449,11 @@ export default function CreatePost() {
         status: "draft",
       };
 
-      const res = await fetch(`${API_BASE}/api/posts`, {
-        method: "POST",
+      const url    = isUpdate ? `${API_BASE}/api/posts/${savedPostId}` : `${API_BASE}/api/posts`;
+      const method = isUpdate ? "PUT" : "POST";
+
+      const res = await fetch(url, {
+        method,
         headers: {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
@@ -463,14 +470,67 @@ export default function CreatePost() {
 
       const data = await res.json();
       console.log("✅ Draft saved:", data);
-      setSavedPostId(data.id); // track so publish can update instead of create
-      showSuccessToast("Draft Saved", "Saved to dashboard 🚀");
+
+      if (!isUpdate) {
+        setSavedPostId(data.id);
+        setSavedPostSlug(data.slug || postData.slug);
+      }
+
+      showSuccessToast("Draft Saved", isUpdate ? "Draft updated ✓" : "Saved to dashboard 🚀");
     } catch (err) {
       console.error("Draft save error:", err);
     }
   };
 
-  const restoreDraft = () => {
+  const restoreDraft = async () => {
+    // Always try DB drafts first — pick the most recently updated one
+    try {
+      const res = await fetch(`${API_BASE}/api/posts`, {
+        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+      });
+      const data = await res.json();
+      const dbDrafts = Array.isArray(data)
+        ? data
+            .filter((p) => p.status === "draft")
+            .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
+        : [];
+
+      if (dbDrafts.length > 0) {
+        const d = dbDrafts[0];
+        setTitle(d.title || "");
+        setSlug(d.slug || "");
+        setCategory(d.category || "");
+        setThumbnail(d.thumbnail || "");
+        setDescription(d.description || "");
+        setTags(Array.isArray(d.tags) ? d.tags.join(", ") : (d.tags || ""));
+        setParent(d.parent_post || "none");
+        setAccess({
+          ...DEFAULT_ACCESS,
+          read: d.access      || "Anyone",
+          edit: d.edit_access || "Logged-in Users",
+        });
+        setSavedPostId(d.id);
+        setSavedPostSlug(d.slug);
+        setDraftBanner(false);
+
+        // Fix: set content first, then increment key in next tick so editor mounts with correct value
+        if (d.content) {
+          setEditorInitialContent(d.content);
+          setContent(d.content);
+          setTimeout(() => setEditorKey((k) => k + 1), 0);
+        }
+
+        const savedTime = new Date(d.updated_at || d.created_at).toLocaleTimeString("en-IN", {
+          hour: "2-digit", minute: "2-digit",
+        });
+        showSuccessToast("Draft Restored", `Latest draft from ${savedTime}`);
+        return;
+      }
+    } catch (err) {
+      console.error("Error fetching DB drafts:", err);
+    }
+
+    // Fallback: localStorage draft
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return;
     try {
@@ -479,7 +539,11 @@ export default function CreatePost() {
       setThumbnail(d.thumbnail || ""); setDescription(d.description || "");
       setTags(d.tags || ""); setParent(d.parent || "none");
       setAssocGroup(d.assocGroup || "none"); setAccess(d.access || DEFAULT_ACCESS);
-      if (d.content) { setEditorInitialContent(d.content); setContent(d.content); setEditorKey((k) => k + 1); }
+      if (d.content) {
+        setEditorInitialContent(d.content);
+        setContent(d.content);
+        setTimeout(() => setEditorKey((k) => k + 1), 0);
+      }
       setLastSaved(d._savedAt || ""); setDraftBanner(false);
       showSuccessToast("Draft Restored", `From ${d._savedAt || "last session"}.`);
     } catch { localStorage.removeItem(DRAFT_KEY); setDraftBanner(false); }
@@ -490,7 +554,7 @@ export default function CreatePost() {
   const resetAll = () => {
     setTitle(""); setSlug(""); setCategory(""); setThumbnail(""); setDescription("");
     setContent(""); setTags(""); setParent("none"); setAssocGroup("none");
-    setAccess(DEFAULT_ACCESS); setEditorInitialContent(""); setEditorKey((p) => p + 1); setLastSaved(""); setSavedPostId(null);
+    setAccess(DEFAULT_ACCESS); setEditorInitialContent(""); setEditorKey((p) => p + 1); setLastSaved(""); setSavedPostId(null); setSavedPostSlug(null);
   };
 
     // const persistPost = () => {
