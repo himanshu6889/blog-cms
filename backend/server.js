@@ -15,7 +15,8 @@ const app = express();
 // middleware
 const allowedOrigins = [
   "http://localhost:5173",
-  "https://blogcms-frontend.netlify.app"
+  "https://blogcms-frontend.netlify.app",
+  "https://blog-cms-one-puce.vercel.app"
 ];
 
 app.use(cors({
