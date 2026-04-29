@@ -42,7 +42,7 @@ export default function Dashboard() {
     )
   ];
 
-  const recentPosts = [...posts]
+  const recentPosts = [...publishedPosts]
     .sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
     .slice(0, 5);
 
