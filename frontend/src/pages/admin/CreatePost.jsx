@@ -394,7 +394,8 @@ export default function CreatePost() {
   if (raw) {
     try {
       const d = JSON.parse(raw);
-      if (d.title || d.description || d.content) {
+      const hasRealContent = (d.content || '').replace(/<[^>]*>/g, '').trim().length > 0;
+      if (d.title || d.description || hasRealContent) {
         setDraftBanner(true);
         setDraftTimestamp(d._savedAt || "");
       }
@@ -422,7 +423,8 @@ export default function CreatePost() {
   const clearDraft = () => localStorage.removeItem(DRAFT_KEY);
 
   useEffect(() => {
-    if (!title && !description && !content) return;
+    const plainContent = (content || '').replace(/<[^>]*>/g, '').trim();
+    if (!title && !description && !plainContent) return;
     const t = setTimeout(() => { const at = writeDraft(); setLastSaved(at); }, 1500);
     return () => clearTimeout(t);
   }, [title, description, content, writeDraft]);
@@ -498,7 +500,11 @@ export default function CreatePost() {
       const data = await res.json();
       const dbDrafts = Array.isArray(data)
         ? data
-            .filter((p) => p.status === "draft")
+            .filter((p) => {
+              if (p.status !== "draft") return false;
+              const hasRealContent = (p.content || '').replace(/<[^>]*>/g, '').trim().length > 0;
+              return p.title || p.description || hasRealContent;
+            })
             .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
         : [];
 
