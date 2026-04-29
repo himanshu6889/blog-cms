@@ -362,6 +362,10 @@ export default function CreatePost() {
   const [savedPostId, setSavedPostId] = useState(null);
   const [savedPostSlug, setSavedPostSlug] = useState(null);
 
+  // Refs to hold latest savedPostId/Slug so autosave closure never goes stale
+  const savedPostIdRef  = useRef(null);
+  const savedPostSlugRef = useRef(null);
+
   useEffect(() => {
     const fetchPosts = async () => {
       try {
@@ -422,31 +426,17 @@ export default function CreatePost() {
 
   const clearDraft = () => localStorage.removeItem(DRAFT_KEY);
 
-  useEffect(() => {
-    const plainContent = (content || '').replace(/<[^>]*>/g, '').trim();
-    if (!title && !description && !plainContent) return;
-    const t = setTimeout(() => { const at = writeDraft(); setLastSaved(at); }, 1500);
-    return () => clearTimeout(t);
-  }, [title, description, content, writeDraft]);
-
-  // Remount editor only AFTER editorInitialContent is committed to state
-  useEffect(() => {
-    if (editorInitialContent) {
-      setEditorKey((k) => k + 1);
-    }
-  }, [editorInitialContent]);
-
-  const showSuccessToast = (t, sub) => { setToastMsg({ title: t, sub }); setShowToast(true); setTimeout(() => setShowToast(false), 2500); };
-  const saveDraft = () => { const at = writeDraft(); setLastSaved(at); showSuccessToast("Draft Saved", "Progress stored locally."); };
-
-  const saveDraftToDB = async () => {
+  // Core DB save — uses refs so the closure is always fresh regardless of when it fires
+  const saveDraftToDB = useCallback(async ({ redirectAfter = false, silent = false } = {}) => {
     try {
-      const isUpdate = !!savedPostId;
+      const isUpdate = !!savedPostIdRef.current;
+      const currentSlug = isUpdate
+        ? savedPostSlugRef.current
+        : slugify(title || "draft", { lower: true, strict: true }) + "-" + Date.now();
+
       const postData = {
         title,
-        slug: isUpdate
-          ? savedPostSlug
-          : slugify(title || "draft", { lower: true, strict: true }) + "-" + Date.now(),
+        slug: currentSlug,
         category: category || "General",
         thumbnail,
         description,
@@ -458,7 +448,7 @@ export default function CreatePost() {
         status: "draft",
       };
 
-      const url    = isUpdate ? `${API_BASE}/api/posts/${savedPostId}` : `${API_BASE}/api/posts`;
+      const url    = isUpdate ? `${API_BASE}/api/posts/${savedPostIdRef.current}` : `${API_BASE}/api/posts`;
       const method = isUpdate ? "PUT" : "POST";
 
       const res = await fetch(url, {
@@ -473,23 +463,67 @@ export default function CreatePost() {
       if (!res.ok) {
         const err = await res.json();
         console.error("Draft error:", err);
-        alert("Failed to save draft");
+        if (!silent) alert("Failed to save draft");
         return;
       }
 
       const data = await res.json();
       console.log("✅ Draft saved:", data);
 
+      // Persist the new id/slug into both state AND refs immediately
       if (!isUpdate) {
-        setSavedPostId(data.id);
-        setSavedPostSlug(data.slug || postData.slug);
+        const newId   = data.id;
+        const newSlug = data.slug || currentSlug;
+        setSavedPostId(newId);
+        setSavedPostSlug(newSlug);
+        savedPostIdRef.current   = newId;
+        savedPostSlugRef.current = newSlug;
       }
 
-      showSuccessToast("Draft Saved", isUpdate ? "Draft updated ✓" : "Saved to dashboard 🚀");
+      if (redirectAfter) {
+        clearDraft();
+        navigate("/admin");
+        return;
+      }
+
+      if (!silent) {
+        showSuccessToast("Draft Saved", isUpdate ? "Draft updated ✓" : "Saved to dashboard 🚀");
+      }
     } catch (err) {
       console.error("Draft save error:", err);
     }
-  };
+  }, [title, slug, category, thumbnail, description, content, tags, parent, access, navigate]); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // Keep refs in sync whenever state changes
+  useEffect(() => { savedPostIdRef.current   = savedPostId;   }, [savedPostId]);
+  useEffect(() => { savedPostSlugRef.current = savedPostSlug; }, [savedPostSlug]);
+
+  // Autosave: localStorage immediately (1.5 s) + DB silently (3 s)
+  useEffect(() => {
+    const plainContent = (content || '').replace(/<[^>]*>/g, '').trim();
+    if (!title && !description && !plainContent) return;
+
+    const localTimer = setTimeout(() => {
+      const at = writeDraft();
+      setLastSaved(at);
+    }, 1500);
+
+    const dbTimer = setTimeout(() => {
+      saveDraftToDB({ silent: true });
+    }, 3000);
+
+    return () => { clearTimeout(localTimer); clearTimeout(dbTimer); };
+  }, [title, description, content, writeDraft, saveDraftToDB]);
+
+  // Remount editor only AFTER editorInitialContent is committed to state
+  useEffect(() => {
+    if (editorInitialContent) {
+      setEditorKey((k) => k + 1);
+    }
+  }, [editorInitialContent]);
+
+  const showSuccessToast = (t, sub) => { setToastMsg({ title: t, sub }); setShowToast(true); setTimeout(() => setShowToast(false), 2500); };
+  const saveDraft = () => { const at = writeDraft(); setLastSaved(at); showSuccessToast("Draft Saved", "Progress stored locally."); };
 
   const restoreDraft = async () => {
     // Always try DB drafts first — pick the most recently updated one
@@ -524,6 +558,8 @@ export default function CreatePost() {
         });
         setSavedPostId(d.id);
         setSavedPostSlug(d.slug);
+        savedPostIdRef.current   = d.id;
+        savedPostSlugRef.current = d.slug;
         setDraftBanner(false);
 
         // Fix: set content first, then increment key in next tick so editor mounts with correct value
@@ -766,7 +802,7 @@ const parentOptions = [
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-5">Save progress or publish when ready.</p>
             <div className="grid grid-cols-2 gap-3">
               <button
-                onClick={() => { saveDraft(); saveDraftToDB(); }}
+                onClick={() => saveDraftToDB({ redirectAfter: true })}
                 className="py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 font-semibold text-slate-800 dark:text-white transition inline-flex items-center justify-center gap-2"
               >
                 <FaSave /> Save Draft
