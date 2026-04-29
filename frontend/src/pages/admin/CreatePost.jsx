@@ -427,6 +427,13 @@ export default function CreatePost() {
     return () => clearTimeout(t);
   }, [title, description, content, writeDraft]);
 
+  // Remount editor only AFTER editorInitialContent is committed to state
+  useEffect(() => {
+    if (editorInitialContent) {
+      setEditorKey((k) => k + 1);
+    }
+  }, [editorInitialContent]);
+
   const showSuccessToast = (t, sub) => { setToastMsg({ title: t, sub }); setShowToast(true); setTimeout(() => setShowToast(false), 2500); };
   const saveDraft = () => { const at = writeDraft(); setLastSaved(at); showSuccessToast("Draft Saved", "Progress stored locally."); };
 
@@ -517,7 +524,6 @@ export default function CreatePost() {
         if (d.content) {
           setEditorInitialContent(d.content);
           setContent(d.content);
-          setTimeout(() => setEditorKey((k) => k + 1), 0);
         }
 
         const savedTime = new Date(d.updated_at || d.created_at).toLocaleTimeString("en-IN", {
@@ -542,7 +548,6 @@ export default function CreatePost() {
       if (d.content) {
         setEditorInitialContent(d.content);
         setContent(d.content);
-        setTimeout(() => setEditorKey((k) => k + 1), 0);
       }
       setLastSaved(d._savedAt || ""); setDraftBanner(false);
       showSuccessToast("Draft Restored", `From ${d._savedAt || "last session"}.`);
