@@ -161,7 +161,21 @@ export default function EditPost() {
           "Content-Type": "application/json",
           Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
-        body: JSON.stringify({ title, category, description, content }),
+        body: JSON.stringify({
+          // Fields being edited
+          title,
+          category,
+          description,
+          content,
+          // Preserve all other fields from the existing post so they aren't wiped
+          slug:        currentPost.slug,
+          status:      currentPost.status,
+          thumbnail:   currentPost.thumbnail   || "",
+          tags:        currentPost.tags        || [],
+          parent_post: currentPost.parent_post || null,
+          access:      currentPost.access      || "Anyone",
+          edit_access: currentPost.edit_access || "Logged-in Users",
+        }),
       });
 
       const data = await res.json();
