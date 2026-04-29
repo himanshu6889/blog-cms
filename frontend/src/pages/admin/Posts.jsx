@@ -28,7 +28,7 @@
           });
           const data = await res.json();
           if (Array.isArray(data)) {
-            setPosts(data);
+            setPosts(data.filter((p) => p.status === "published"));
           } else {
             setPosts([]);
           }
