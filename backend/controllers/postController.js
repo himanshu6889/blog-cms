@@ -17,7 +17,7 @@ export const createPost = async (req, res) => {
   } = req.body;
 
   try {
-    const userId = req.user.id; // Get user ID from auth middleware
+    const userId = req.user.id;
     const result = await pool.query(
       `INSERT INTO posts 
       (title, slug, category, thumbnail, description, content, tags, status, parent_post, access, edit_access, user_id, created_at)
@@ -28,8 +28,10 @@ export const createPost = async (req, res) => {
 
     res.json(result.rows[0]);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Error creating post" });
+    console.error("CREATE POST ERROR:", err.message);
+    console.error("PG CODE:", err.code);
+    console.error("PG DETAIL:", err.detail);
+    res.status(500).json({ error: err.message });
   }
 };
 
