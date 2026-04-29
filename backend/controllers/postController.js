@@ -10,16 +10,20 @@ export const createPost = async (req, res) => {
     description,
     content,
     tags,
+    status,
+    parent_post,
+    access,
+    edit_access,
   } = req.body;
 
   try {
     const userId = req.user.id; // Get user ID from auth middleware
     const result = await pool.query(
       `INSERT INTO posts 
-      (title, slug, category, thumbnail, description, content, tags, user_id, created_at)
-      VALUES ($1,$2,$3,$4,$5,$6,$7,$8, NOW())
+      (title, slug, category, thumbnail, description, content, tags, status, parent_post, access, edit_access, user_id, created_at)
+      VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, NOW())
       RETURNING *`,
-      [title, slug, category, thumbnail, description, content, tags, userId]
+      [title, slug, category, thumbnail, description, content, tags, status || 'draft', parent_post || null, access || 'Anyone', edit_access || 'Logged-in Users', userId]
     );
 
     res.json(result.rows[0]);
@@ -102,6 +106,7 @@ export const getPublicPosts = async (req, res) => {
         users.avatar AS author_avatar
       FROM posts
       LEFT JOIN users ON posts.user_id = users.id
+      WHERE posts.status = 'published'
       ORDER BY posts.created_at DESC
     `);
 
@@ -125,6 +130,7 @@ export const getPostBySlug = async (req, res) => {
       FROM posts
       LEFT JOIN users ON posts.user_id = users.id
       WHERE posts.slug = $1
+      AND posts.status = 'published'
     `, [slug]);
 
     if (result.rows.length === 0) {

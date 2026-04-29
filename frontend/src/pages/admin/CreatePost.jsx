@@ -428,6 +428,46 @@ export default function CreatePost() {
   const showSuccessToast = (t, sub) => { setToastMsg({ title: t, sub }); setShowToast(true); setTimeout(() => setShowToast(false), 2500); };
   const saveDraft = () => { const at = writeDraft(); setLastSaved(at); showSuccessToast("Draft Saved", "Progress stored locally."); };
 
+  const saveDraftToDB = async () => {
+    try {
+      const postData = {
+        title,
+        slug: slugify(title || "draft", { lower: true, strict: true }) + "-" + Date.now(),
+        category: category || "General",
+        thumbnail,
+        description,
+        content,
+        tags: tags ? tags.split(",").map((t) => t.trim()).filter(Boolean) : [],
+        parent_post: parent === "none" ? null : parent,
+        access: access.read,
+        edit_access: access.edit,
+        status: "draft",
+      };
+
+      const res = await fetch(`${API_BASE}/api/posts`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${localStorage.getItem("token")}`,
+        },
+        body: JSON.stringify(postData),
+      });
+
+      if (!res.ok) {
+        const err = await res.json();
+        console.error("Draft error:", err);
+        alert("Failed to save draft");
+        return;
+      }
+
+      const data = await res.json();
+      console.log("✅ Draft saved:", data);
+      showSuccessToast("Draft Saved", "Saved to dashboard 🚀");
+    } catch (err) {
+      console.error("Draft save error:", err);
+    }
+  };
+
   const restoreDraft = () => {
     const raw = localStorage.getItem(DRAFT_KEY);
     if (!raw) return;
@@ -643,7 +683,10 @@ const parentOptions = [
             <h2 className="text-2xl font-bold text-slate-900 dark:text-white">Publish</h2>
             <p className="text-sm text-slate-500 dark:text-slate-400 mt-1 mb-5">Save progress or publish when ready.</p>
             <div className="grid grid-cols-2 gap-3">
-              <button onClick={saveDraft} className="py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 font-semibold text-slate-800 dark:text-white transition inline-flex items-center justify-center gap-2">
+              <button
+                onClick={() => { saveDraft(); saveDraftToDB(); }}
+                className="py-3 rounded-2xl bg-slate-100 dark:bg-slate-700 hover:bg-slate-200 dark:hover:bg-slate-600 font-semibold text-slate-800 dark:text-white transition inline-flex items-center justify-center gap-2"
+              >
                 <FaSave /> Save Draft
               </button>
               <button
