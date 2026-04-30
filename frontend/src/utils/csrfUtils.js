@@ -6,7 +6,7 @@
  *   2. Replace all fetch() calls that POST/PUT/DELETE with authFetch()
  */
 
-import API_BASE from "./api";
+import API_BASE from "../api";
 
 // Stored in memory — XSS cannot steal this (unlike localStorage)
 let _csrfToken = null;
