@@ -111,6 +111,7 @@ export const getPublicPosts = async (req, res) => {
         posts.description,
         posts.content,
         posts.created_at,
+        posts.user_id AS author_id,
         users.name AS author_name,
         users.avatar AS author_avatar
       FROM posts
@@ -134,6 +135,7 @@ export const getPostBySlug = async (req, res) => {
     const result = await pool.query(`
       SELECT 
         posts.*,
+        posts.user_id AS author_id,
         users.name AS author_name,
         users.avatar AS author_avatar
       FROM posts
@@ -150,5 +152,48 @@ export const getPostBySlug = async (req, res) => {
   } catch (err) {
     console.error("GET POST ERROR:", err);
     res.status(500).json({ error: "Error fetching post" });
+  }
+};
+
+// GET AUTHOR PROFILE + ALL THEIR PUBLISHED POSTS
+// Route: GET /api/authors/:id
+export const getAuthorProfile = async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    // 1. Fetch author info
+    const authorResult = await pool.query(
+      `SELECT id, name, email, avatar FROM users WHERE id = $1`,
+      [id]
+    );
+
+    if (authorResult.rows.length === 0) {
+      return res.status(404).json({ error: "Author not found" });
+    }
+
+    // 2. Fetch all published posts by this author
+    const postsResult = await pool.query(
+      `SELECT 
+        id,
+        title,
+        slug,
+        category,
+        thumbnail,
+        description,
+        created_at
+      FROM posts
+      WHERE user_id = $1
+        AND status = 'published'
+      ORDER BY created_at DESC`,
+      [id]
+    );
+
+    res.json({
+      author: authorResult.rows[0],
+      posts: postsResult.rows,
+    });
+  } catch (err) {
+    console.error("GET AUTHOR PROFILE ERROR:", err);
+    res.status(500).json({ error: "Error fetching author profile" });
   }
 };

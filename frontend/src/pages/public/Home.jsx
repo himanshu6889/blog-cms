@@ -89,6 +89,30 @@ useEffect(() => {
     General:  "bg-slate-100 dark:bg-slate-700     text-slate-600  dark:text-slate-300",
   };
 
+  // REUSABLE: Clickable Author chip (stops link propagation so card click still works)
+  const AuthorChip = ({ post, size = "sm" }) => (
+    <Link
+      to={`/author/${post.author_id}`}
+      onClick={(e) => e.stopPropagation()}
+      className="flex items-center gap-1.5 hover:opacity-80 transition"
+    >
+      {post.author_avatar ? (
+        <img
+          src={post.author_avatar}
+          alt={post.author_name}
+          className={`${size === "sm" ? "w-5 h-5" : "w-6 h-6"} rounded-full object-cover flex-shrink-0`}
+        />
+      ) : (
+        <div className={`${size === "sm" ? "w-5 h-5" : "w-6 h-6"} rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0`}>
+          {post.author_name?.charAt(0) || "?"}
+        </div>
+      )}
+      <span className="hover:text-blue-600 dark:hover:text-blue-400 transition">
+        {post.author_name || "Unknown"}
+      </span>
+    </Link>
+  );
+
   return (
     <div className="w-full px-8 py-10">
 
@@ -168,16 +192,8 @@ useEffect(() => {
 
                 {/* AUTHOR + READING TIME */}
                 <div className="flex items-center gap-4">
-                  <div className="flex items-center gap-2">
-                    {featured.author_avatar ? (
-                      <img src={featured.author_avatar} alt={featured.author_name} className="w-6 h-6 rounded-full object-cover flex-shrink-0" />
-                    ) : (
-                      <div className="w-6 h-6 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0">
-                        {featured.author_name?.charAt(0) || "?"}
-                      </div>
-                    )}
-                    <span>{featured.author_name || "Unknown"}</span>
-                  </div>
+                  {/* ✅ CLICKABLE AUTHOR */}
+                  <AuthorChip post={featured} size="md" />
                   <span className="text-slate-300 dark:text-slate-600">·</span>
                   <span>Posted {getRelativeTime(featured.created_at)}</span>
                 </div>
@@ -226,25 +242,18 @@ useEffect(() => {
 
                   {/* AUTHOR + READING */}
                   <div className="flex items-center gap-3">
-                    <div className="flex items-center gap-1.5">
-                      {post.author_avatar ? (
-                        <img src={post.author_avatar} alt={post.author_name} className="w-5 h-5 rounded-full object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="w-5 h-5 rounded-full bg-blue-600 text-white flex items-center justify-center text-xs font-semibold uppercase flex-shrink-0">
-                          {post.author_name?.charAt(0) || "?"}
-                        </div>
-                      )}
-                      <span>{post.author_name || "Unknown"}</span>
-                    </div>
+                    {/* ✅ CLICKABLE AUTHOR */}
+                    <AuthorChip post={post} size="sm" />
                     <span className="text-slate-300 dark:text-slate-600">·</span>
                     <span>Posted {getRelativeTime(post.created_at)}</span>
                   </div>
                 </div>
-                </div>
               </div>
+            </div>
           </Link>
         ))}
       </div>
+
       {filteredPosts.length === 0 && (
         <div className="text-center py-20 text-slate-400 dark:text-slate-500">
           No posts found.

@@ -5,6 +5,7 @@ import AdminLayout from "./layouts/AdminLayout";
 
 import Home from "./pages/public/Home";
 import BlogDetails from "./pages/public/BlogDetails";
+import AuthorProfile from "./pages/public/AuthorProfile"; // ✅ ADD THIS
 
 import Dashboard from "./pages/admin/Dashboard";
 import CreatePost from "./pages/admin/CreatePost";
@@ -35,6 +36,10 @@ const router = createBrowserRouter([
       {
         path: "blog/:slug",
         element: <BlogDetails />
+      },
+      {
+        path: "author/:id",       // ✅ ADD THIS
+        element: <AuthorProfile />
       }
     ]
   },
