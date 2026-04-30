@@ -9,6 +9,7 @@ import {
 import Editor from "../../editor/Editor";
 
 import API_BASE from "../../api"; 
+import { authFetch } from "../../utils/csrfUtils"; 
 
 const DRAFT_KEY = "create_post_draft";
 const ACCESS_OPTIONS = ["Anyone", "Logged-in Users", "Only Me", "No One"];
@@ -449,13 +450,8 @@ export default function CreatePost() {
       const url    = isUpdate ? `${API_BASE}/api/posts/${savedPostIdRef.current}` : `${API_BASE}/api/posts`;
       const method = isUpdate ? "PUT" : "POST";
 
-      const res = await fetch(url, {
+      const res = await authFetch(url, {
         method,
-        headers: {
-          "Content-Type": "application/json",
-          
-        },
-        credentials: "include",
         body: JSON.stringify(postData),
       });
 
@@ -643,13 +639,9 @@ export default function CreatePost() {
     const url    = savedPostId ? `${API_BASE}/api/posts/${savedPostId}` : `${API_BASE}/api/posts`;
     const method = savedPostId ? "PUT" : "POST";
 
-    const res = await fetch(url, {
+    const res = await authFetch(url, {
       method,
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include",
-        body: JSON.stringify(postData),
+      body: JSON.stringify(postData),
     });
 
     //  IMPORTANT CHECK

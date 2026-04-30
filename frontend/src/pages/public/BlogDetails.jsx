@@ -1,38 +1,39 @@
 import { useEffect, useState } from "react";
 import { useParams, Link, useNavigate } from "react-router-dom";
-import API_BASE from "../../api"; 
+import DOMPurify from "dompurify"; // ✅ Fix 2: sanitize HTML before rendering
+import API_BASE from "../../api";
 
 export default function BlogDetails() {
   const { slug } = useParams();
   const navigate = useNavigate();
   const [post, setPost] = useState(null);
   const [relatedPosts, setRelatedPosts] = useState([]);
-  const [loading, setLoading] = useState(true); 
+  const [loading, setLoading] = useState(true);
 
   useEffect(() => {
     const fetchPost = async () => {
-  try {
-    setLoading(true);
+      try {
+        setLoading(true);
 
-    const res = await fetch(`${API_BASE}/api/posts/${slug}`);
-    const data = await res.json();
+        const res = await fetch(`${API_BASE}/api/posts/${slug}`);
+        const data = await res.json();
 
-    console.log("POST DATA:", data);
+        console.log("POST DATA:", data);
 
-    if (data.error) {
-      setPost(null);
-    } else {
-      setPost(data);
-    }
+        if (data.error) {
+          setPost(null);
+        } else {
+          setPost(data);
+        }
 
-  } catch (err) {
-    console.error("Error loading post:", err);
-  } finally {
-    setLoading(false);
-  }
-};
-fetchPost();
-}, [slug]);
+      } catch (err) {
+        console.error("Error loading post:", err);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchPost();
+  }, [slug]);
 
   const formatDate = (value) => {
     const date = new Date(value);
@@ -65,7 +66,6 @@ fetchPost();
     return `${weeks} week${weeks === 1 ? "" : "s"} ago`;
   };
 
-  //  Show spinner while fetching — not "Post Not Found"
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -76,7 +76,6 @@ fetchPost();
     );
   }
 
-  //  Only show "not found" after fetch is complete and post is still null
   if (!post) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-slate-50 dark:bg-slate-900">
@@ -86,6 +85,10 @@ fetchPost();
       </div>
     );
   }
+
+  // ✅ Fix 2: sanitize post content before rendering as HTML
+  // DOMPurify strips all malicious scripts while keeping valid formatting tags
+  const safeContent = DOMPurify.sanitize(post.content || "<p>No content found.</p>");
 
   return (
     <div className="min-h-screen">
@@ -105,6 +108,7 @@ fetchPost();
               Home
             </Link>
             <span className="mx-2">/</span>
+            {/* ✅ Fix 1: plain JSX, not innerHTML */}
             <span className="text-slate-700 dark:text-slate-300 font-medium">
               {post.title}
             </span>
@@ -122,6 +126,7 @@ fetchPost();
           />
         )}
 
+        {/* ✅ Fix 1: plain JSX for category, title, author — never innerHTML */}
         <span className="inline-block px-4 py-1 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-400 text-sm font-semibold mb-5">
           {post.category || "General"}
         </span>
@@ -132,13 +137,11 @@ fetchPost();
 
         <div className="flex flex-wrap gap-5 text-slate-500 dark:text-slate-400 text-sm mb-6">
           <span>🕒 Posted {getRelativeTime(post.created_at)}</span>
-          
-          {/* ✅ CLICKABLE AUTHOR — links to /author/:id */}
+
           <Link
             to={`/author/${post.author_id}`}
             className="flex items-center gap-2 hover:opacity-80 transition group"
           >
-            {/* Avatar */}
             {post.author_avatar ? (
               <img
                 src={post.author_avatar}
@@ -151,31 +154,28 @@ fetchPost();
               </div>
             )}
 
-            {/* Name */}
             <span className="font-medium group-hover:text-blue-600 dark:group-hover:text-blue-400 transition">
               {post.author_name || "Unknown"}
             </span>
           </Link>
         </div>
-
       </section>
 
-      {/* Description + Content — same width, same card style */}
+      {/* Description + Content */}
       <section className="w-full px-8 pb-16 flex flex-col gap-6">
 
-        {/* Description — transparent, blends with page background */}
         {post.description && (
+          // ✅ Fix 1: plain JSX for description
           <p className="text-lg text-slate-700 dark:text-slate-300 leading-relaxed px-2 [word-break:break-word] [overflow-wrap:anywhere]">
             {post.description}
           </p>
         )}
 
-        {/* Content Box */}
         <div className="bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-3xl shadow-xl dark:shadow-slate-900 p-8 md:p-12 overflow-hidden">
           <div
             className="prose prose-lg dark:prose-invert max-w-none prose-img:rounded-2xl prose-headings:text-slate-900 dark:prose-headings:text-white prose-p:text-slate-700 dark:prose-p:text-slate-300 prose-a:text-blue-600 dark:prose-a:text-blue-400 [word-break:break-word] [overflow-wrap:anywhere]"
             dangerouslySetInnerHTML={{
-              __html: post.content || "<p>No content found.</p>",
+              __html: safeContent, // ✅ Fix 2: sanitized, never raw
             }}
           />
         </div>

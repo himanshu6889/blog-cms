@@ -2,8 +2,27 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
+
+    <!--  Content Security Policy -->
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="
+        default-src 'self';
+        script-src 'self';
+        style-src 'self' 'unsafe-inline' https://fonts.googleapis.com;
+        font-src 'self' https://fonts.gstatic.com;
+        img-src 'self' data: https: http:;
+        connect-src 'self' https://blog-cms-production-f347.up.railway.app;
+        object-src 'none';
+      "
+    />
+
     <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <link
+      rel="stylesheet"
+      href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0;1&display=swap"
+    />
     <title>Uxism-Club</title>
   </head>
   <body>
@@ -11,7 +30,3 @@
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>
-<link
-rel="stylesheet"
-href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:FILL@0;1&display=swap"
-/>
