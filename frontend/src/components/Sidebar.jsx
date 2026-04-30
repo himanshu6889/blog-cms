@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import {
   FaHome,
   FaPen,
@@ -13,23 +13,23 @@ import API_BASE from "../api";
 
 export default function Sidebar({ pinned, setPinned }) {
   const [hovered, setHovered] = useState(false);
-  const navigate = useNavigate();
+  const [loggingOut, setLoggingOut] = useState(false);
 
-  // expanded when pinned OR when hovering the nav/body area
   const expanded = pinned || hovered;
 
   const handleLogout = async () => {
+    setLoggingOut(true);
     try {
       await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
-        credentials: "include", // clears HTTP-only cookie on server
+        credentials: "include",
       });
     } catch (err) {
-      // Even if the request fails, clear local state and redirect
       console.error("Logout request failed:", err);
     } finally {
-      localStorage.removeItem("token"); // ✅ clear any token remnants
-      navigate("/login", { replace: true }); // ✅ replace so back button doesn't return to admin
+      // ✅ Hard redirect — tears down the entire React tree so ProtectedRoute
+      // re-mounts fresh on next visit. navigate() doesn't do this.
+      window.location.replace("/login");
     }
   };
 
@@ -94,10 +94,15 @@ export default function Sidebar({ pinned, setPinned }) {
 
         <button
           onClick={handleLogout}
-          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all duration-300 shadow-lg shadow-red-600/20"
+          disabled={loggingOut}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-600 hover:bg-red-700 disabled:opacity-60 disabled:cursor-not-allowed text-white font-semibold transition-all duration-300 shadow-lg shadow-red-600/20"
         >
           <FaSignOutAlt className="flex-shrink-0" />
-          {expanded && <span className="truncate">Logout</span>}
+          {expanded && (
+            <span className="truncate">
+              {loggingOut ? "Logging out..." : "Logout"}
+            </span>
+          )}
         </button>
 
         {expanded && (

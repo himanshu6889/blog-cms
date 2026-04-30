@@ -7,7 +7,7 @@ export default function AdminLayout() {
   const [pinned, setPinned] = useState(false);
 
   // ✅ No manual auth check here — ProtectedRoute handles it via HTTP-only cookie.
-  // The old localStorage check was redundant and conflicted with cookie-based auth.
+  // The old localStorage/useEffect check was conflicting with cookie-based auth.
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 transition-colors duration-300">
