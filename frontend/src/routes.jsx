@@ -79,7 +79,7 @@ const router = createBrowserRouter([
         element: <EditPost />
       },
       {
-        path: "drafts",               // 👈 NEW
+        path: "drafts",             
         element: <Drafts />
       },
       {
