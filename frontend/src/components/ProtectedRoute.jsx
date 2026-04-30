@@ -1,13 +1,13 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import API_BASE from "../../api";
+import API_BASE from "../api";
 
 const ProtectedRoute = ({ children }) => {
   const [status, setStatus] = useState("loading"); // "loading" | "auth" | "unauth"
 
   useEffect(() => {
     fetch(`${API_BASE}/api/auth/me`, {
-      credentials: "include", // ✅ sends the HTTP-only cookie
+      credentials: "include", //  sends the HTTP-only cookie
     })
       .then((res) => {
         if (res.ok) {
