@@ -9,9 +9,9 @@ import userRoutes from "./routes/user.js";
 import path from "path";
 import uploadRoutes from "./routes/upload.js";
 
-dotenv.config();  
+dotenv.config();
 
-const app = express();   
+const app = express();
 
 // middleware
 const allowedOrigins = [
@@ -20,7 +20,7 @@ const allowedOrigins = [
   "https://blog-cms-one-puce.vercel.app"
 ];
 
-app.use(cors({
+const corsOptions = {
   origin: function (origin, callback) {
     if (!origin || allowedOrigins.includes(origin)) {
       callback(null, true);
@@ -29,13 +29,17 @@ app.use(cors({
     }
   },
   credentials: true
-}));
+};
+
+app.use(cors(corsOptions));
+app.options("*", cors(corsOptions)); // handles preflight OPTIONS requests
+
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
 app.use(cookieParser());
 
 // routes
-app.use("/api/auth", authRoutes);   
+app.use("/api/auth", authRoutes);
 app.use("/api/posts", postRoutes);
 
 // serve uploaded files
