@@ -370,9 +370,7 @@ export default function CreatePost() {
     const fetchPosts = async () => {
       try {
         const res = await fetch(`${API_BASE}/api/posts`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          credentials: "include",
         });
         const data = await res.json();
         console.log("Existing Posts API:", data);
@@ -455,8 +453,9 @@ export default function CreatePost() {
         method,
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
+          
         },
+        credentials: "include",
         body: JSON.stringify(postData),
       });
 
@@ -529,7 +528,7 @@ export default function CreatePost() {
     // Always try DB drafts first — pick the most recently updated one
     try {
       const res = await fetch(`${API_BASE}/api/posts`, {
-        headers: { Authorization: `Bearer ${localStorage.getItem("token")}` },
+        credentials: "include",
       });
       const data = await res.json();
       const dbDrafts = Array.isArray(data)
@@ -647,9 +646,10 @@ export default function CreatePost() {
     const res = await fetch(url, {
       method,
       headers: {
-        "Content-Type": "application/json", Authorization: `Bearer ${localStorage.getItem("token")}`,
+        "Content-Type": "application/json",
       },
-      body: JSON.stringify(postData),
+      credentials: "include",
+        body: JSON.stringify(postData),
     });
 
     //  IMPORTANT CHECK

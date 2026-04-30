@@ -22,9 +22,7 @@
       const fetchPosts = async () => {
         try {
           const res = await fetch(`${API_BASE}/api/posts`, {
-            headers: {
-              Authorization: `Bearer ${localStorage.getItem("token")}`,
-            },
+            credentials: "include",
           });
           const data = await res.json();
           if (Array.isArray(data)) {
@@ -109,17 +107,13 @@
       for (let id of deleteIds) {
         await fetch(`${API_BASE}/api/posts/${id}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          credentials: "include",
         });
       }
 
       // refetch updated posts
       const res = await fetch(`${API_BASE}/api/posts`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        credentials: "include",
       });
       
       const data = await res.json();

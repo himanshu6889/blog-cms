@@ -21,9 +21,7 @@ export default function Drafts() {
   const fetchDrafts = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/posts`, {
-        headers: {
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
-        },
+        credentials: "include",
       });
       const data = await res.json();
       // drafts live in the same posts table — filter by status
@@ -129,9 +127,7 @@ export default function Drafts() {
       for (let id of deleteIds) {
         await fetch(`${API_BASE}/api/posts/${id}`, {
           method: "DELETE",
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          credentials: "include",
         });
       }
       setSelected([]);
@@ -154,8 +150,8 @@ export default function Drafts() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include",
         body: JSON.stringify({
           title:       draft.title,
           slug:        draft.slug,
