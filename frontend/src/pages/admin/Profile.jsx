@@ -11,6 +11,27 @@ export default function Profile() {
 
   const token = localStorage.getItem("token");
 
+  const saveProfile = async (nextUser) => {
+    const res = await fetch(`${API_BASE}/api/users/me`, {
+      method: "PUT",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: "Bearer " + token,
+      },
+      body: JSON.stringify(nextUser),
+    });
+
+    const data = await res.json();
+
+    if (!res.ok) {
+      throw new Error(data?.message || "Failed to update profile");
+    }
+
+    setUser(data);
+    window.dispatchEvent(new Event("profileUpdated"));
+    return data;
+  };
+
   // FETCH PROFILE
   useEffect(() => {
     fetch(`${API_BASE}/api/users/me`, {
@@ -26,21 +47,11 @@ export default function Profile() {
   // UPDATE PROFILE
   const handleUpdate = async () => {
     try {
-      const res = await fetch(`${API_BASE}/api/users/me`, {
-        method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-          Authorization: "Bearer " + token,
-        },
-        body: JSON.stringify(user),
-      });
-
-      const data = await res.json();
-      setUser(data);
-      window.dispatchEvent(new Event("profileUpdated"));
+      await saveProfile(user);
       alert("Profile updated!");
     } catch (err) {
       console.error(err);
+      alert(err.message || "Profile update failed");
     }
   };
 
@@ -87,13 +98,20 @@ export default function Profile() {
 
                   const data = await res.json();
 
-                  // Save URL
-                  setUser((prev) => ({
-                    ...prev,
+                  if (!res.ok) {
+                    throw new Error(data?.message || "Avatar upload failed");
+                  }
+
+                  const nextUser = {
+                    ...user,
                     avatar: data.url,
-                  }));
+                  };
+
+                  setUser(nextUser);
+                  await saveProfile(nextUser);
                 } catch (err) {
                   console.error("Upload error:", err);
+                  alert(err.message || "Avatar upload failed");
                 }
               }}
               className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"

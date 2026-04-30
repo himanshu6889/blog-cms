@@ -1,12 +1,19 @@
 import express from "express";
+import fs from "fs";
+import path from "path";
 import multer from "multer";
 
 const router = express.Router();
+const uploadsDir = path.resolve("uploads");
+
+if (!fs.existsSync(uploadsDir)) {
+  fs.mkdirSync(uploadsDir, { recursive: true });
+}
 
 // Storage config
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/");
+    cb(null, uploadsDir);
   },
   filename: (req, file, cb) => {
     const uniqueName = Date.now() + "-" + file.originalname;
@@ -18,7 +25,8 @@ const upload = multer({ storage });
 
 // POST /api/upload
 router.post("/", upload.single("avatar"), (req, res) => {
-  const fileUrl = `http://blog-cms-production-f347.up.railway.app/uploads/${req.file.filename}`;
+  const baseUrl = process.env.PUBLIC_UPLOAD_BASE_URL || `${req.protocol}://${req.get("host")}`;
+  const fileUrl = `${baseUrl}/uploads/${req.file.filename}`;
   res.json({ url: fileUrl });
 });
 
