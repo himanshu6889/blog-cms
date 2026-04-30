@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { useNavigate, Link } from "react-router-dom";
-import API_BASE from "../../api"; 
-
+import API_BASE from "../../api";
 
 const Signup = () => {
   const navigate = useNavigate();
@@ -25,6 +24,7 @@ const Signup = () => {
         headers: {
           "Content-Type": "application/json",
         },
+        credentials: "include", // ✅ added for consistency
         body: JSON.stringify(form),
       });
 
@@ -48,7 +48,6 @@ const Signup = () => {
     <div className="flex justify-center items-center h-screen relative">
 
       {/* Back to website option */}
-
       <div className="absolute top-6 left-6">
         <Link
           to="/"
@@ -93,16 +92,15 @@ const Signup = () => {
         </button>
 
         {/* login option */}
-
         <p className="mt-4 text-sm text-center">
           Already have an account?{" "}
           <span
-          className="text-blue-500 cursor-pointer"
-          onClick={() => navigate("/login")}
+            className="text-blue-500 cursor-pointer"
+            onClick={() => navigate("/login")}
           >
             Login
-            </span>
-            </p>
+          </span>
+        </p>
       </form>
     </div>
   );

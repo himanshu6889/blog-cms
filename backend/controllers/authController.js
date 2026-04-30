@@ -30,7 +30,7 @@ export const login = async (req, res) => {
   try {
     const { email, password } = req.body;
 
-    const result = await pool.query(  
+    const result = await pool.query(
       "SELECT * FROM users WHERE email = $1",
       [email]
     );
@@ -50,10 +50,33 @@ export const login = async (req, res) => {
     );
 
     const { password: _, ...safeUser } = user;
-    res.json({ token, user: safeUser });
+
+    res
+      .cookie("token", token, {
+        httpOnly: true,
+        secure: true,
+        sameSite: "None",
+      })
+      .json({ user: safeUser });
 
   } catch (err) {
     console.log(err);
     res.status(500).json({ message: "Login failed" });
   }
+};
+
+// LOGOUT
+export const logout = (req, res) => {
+  res
+    .clearCookie("token", {
+      httpOnly: true,
+      secure: true,
+      sameSite: "None",
+    })
+    .json({ message: "Logged out" });
+};
+
+// GET CURRENT USER (used by frontend to check auth status)
+export const getMe = (req, res) => {
+  res.json({ user: req.user });
 };

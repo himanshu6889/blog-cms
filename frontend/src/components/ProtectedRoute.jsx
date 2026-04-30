@@ -1,10 +1,30 @@
+import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
+import API_BASE from "../../api";
 
 const ProtectedRoute = ({ children }) => {
-  const token = localStorage.getItem("token");
+  const [status, setStatus] = useState("loading"); // "loading" | "auth" | "unauth"
 
-  if (!token) {
-    return <Navigate to="/login" />;
+  useEffect(() => {
+    fetch(`${API_BASE}/api/auth/me`, {
+      credentials: "include", // ✅ sends the HTTP-only cookie
+    })
+      .then((res) => {
+        if (res.ok) {
+          setStatus("auth");
+        } else {
+          setStatus("unauth");
+        }
+      })
+      .catch(() => setStatus("unauth"));
+  }, []);
+
+  if (status === "loading") {
+    return null; // or replace with a spinner/skeleton
+  }
+
+  if (status === "unauth") {
+    return <Navigate to="/login" replace />;
   }
 
   return children;
