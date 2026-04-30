@@ -1,5 +1,5 @@
 import { useState } from "react";
-import { NavLink, useNavigate } from "react-router-dom"; // useNavigate still used for logout
+import { NavLink, useNavigate } from "react-router-dom";
 import {
   FaHome,
   FaPen,
@@ -9,18 +9,20 @@ import {
   FaSignOutAlt,
   FaBars,
 } from "react-icons/fa";
+import API_BASE from "../api";
 
 export default function Sidebar({ pinned, setPinned }) {
   const [hovered, setHovered] = useState(false);
   const navigate = useNavigate();
 
-  // expanded when pinned OR when hovering the nav/body area (NOT the header)
+  // expanded when pinned OR when hovering the nav/body area
   const expanded = pinned || hovered;
 
-  const isLoggedIn = !!localStorage.getItem("token");
-
-  const handleLogout = () => {
-    localStorage.removeItem("token");
+  const handleLogout = async () => {
+    await fetch(`${API_BASE}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include", // ✅ clears HTTP-only cookie on server
+    });
     navigate("/login");
   };
 
@@ -36,16 +38,14 @@ export default function Sidebar({ pinned, setPinned }) {
         transition-all duration-300 overflow-hidden
       `}
     >
-      {/* HEADER — hovering here does NOT expand */}
+      {/* HEADER */}
       <div className="flex items-center gap-3 px-2 mb-8 min-h-[44px] flex-shrink-0">
         {expanded && (
           <div className="flex-1 min-w-0">
             <h2 className="text-xl font-bold tracking-tight text-white truncate">
               UxismClub
             </h2>
-            {isLoggedIn && (
-              <p className="text-xs text-slate-400 mt-0.5">Admin Panel</p>
-              )}
+            <p className="text-xs text-slate-400 mt-0.5">Admin Panel</p>
           </div>
         )}
         <button
@@ -61,61 +61,38 @@ export default function Sidebar({ pinned, setPinned }) {
         </button>
       </div>
 
-      {/* NAVIGATION — hovering here expands the sidebar */}
+      {/* NAVIGATION */}
       <nav
         onMouseEnter={() => setHovered(true)}
         className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden"
       >
-        {isLoggedIn && (
-          <>
-          <SidebarItem to="/admin" icon={<FaHome />} label="Dashboard" expanded={expanded} end />
-          <SidebarItem to="/admin/create-post" icon={<FaPen />} label="Create Post" expanded={expanded} />
-          <SidebarItem to="/admin/posts" icon={<FaFolder />} label="All Posts" expanded={expanded} />
-          <SidebarItem to="/admin/drafts" icon={<FaFileAlt />} label="Drafts" expanded={expanded} />
-          </>
-)}
-
-{!isLoggedIn && (
-  <>
-    <SidebarItem
-      to="/login"
-      icon={<FaSignOutAlt />}
-      label="Login"
-      expanded={expanded}
-    />
-    <SidebarItem
-      to="/signup"
-      icon={<FaPen />}
-      label="Signup"
-      expanded={expanded}
-    />
-  </>
-)}
-
+        {/* ✅ Always show admin nav — Sidebar is only rendered inside ProtectedRoute */}
+        <SidebarItem to="/admin" icon={<FaHome />} label="Dashboard" expanded={expanded} end />
+        <SidebarItem to="/admin/create-post" icon={<FaPen />} label="Create Post" expanded={expanded} />
+        <SidebarItem to="/admin/posts" icon={<FaFolder />} label="All Posts" expanded={expanded} />
+        <SidebarItem to="/admin/drafts" icon={<FaFileAlt />} label="Drafts" expanded={expanded} />
         <SidebarItem to="/" icon={<FaGlobe />} label="View Website" expanded={expanded} end />
       </nav>
 
-      {/* BOTTOM — hovering here also expands */}
+      {/* BOTTOM */}
       <div
         onMouseEnter={() => setHovered(true)}
         className="mt-auto space-y-3 pt-3"
       >
-        {expanded && isLoggedIn && (
+        {expanded && (
           <div className="rounded-2xl border border-slate-800 bg-white/5 backdrop-blur-sm p-4">
             <p className="text-sm font-semibold text-white">Administrator</p>
             <p className="text-xs text-slate-400 mt-1">Secure session active</p>
           </div>
         )}
 
-        {isLoggedIn && (
-          <button
-            onClick={handleLogout}
-            className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all duration-300 shadow-lg shadow-red-600/20"
-          >
-            <FaSignOutAlt className="flex-shrink-0" />
-            {expanded && <span className="truncate">Logout</span>}
-          </button>
-        )}
+        <button
+          onClick={handleLogout}
+          className="w-full flex items-center justify-center gap-2 py-3 rounded-2xl bg-red-600 hover:bg-red-700 text-white font-semibold transition-all duration-300 shadow-lg shadow-red-600/20"
+        >
+          <FaSignOutAlt className="flex-shrink-0" />
+          {expanded && <span className="truncate">Logout</span>}
+        </button>
 
         {expanded && (
           <p className="text-center text-[11px] text-slate-500 pb-1">Version 1.0</p>

@@ -8,54 +8,44 @@ export default function ProfileMenu() {
   const menuRef = useRef();
   const navigate = useNavigate();
 
-  const token = localStorage.getItem("token");
-
-  useEffect(() => {
-    fetch(`${API_BASE}/api/users/me`, {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
-    })
-      .then(res => res.json())
-      .then(data => setUser(data));
-  }, []);
-
-// Listen for profile updates
-useEffect(() => {
   const fetchUser = () => {
     fetch(`${API_BASE}/api/users/me`, {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
+      credentials: "include", // ✅ use cookie-based auth
     })
       .then(res => res.json())
       .then(data => setUser(data));
   };
 
-  window.addEventListener("profileUpdated", fetchUser);
+  useEffect(() => {
+    fetchUser();
+  }, []);
 
-  return () => {
-    window.removeEventListener("profileUpdated", fetchUser);
-  };
-}, []);
+  // Listen for profile updates
+  useEffect(() => {
+    window.addEventListener("profileUpdated", fetchUser);
+    return () => {
+      window.removeEventListener("profileUpdated", fetchUser);
+    };
+  }, []);
 
-    // Close dropdown on outside click
+  // Close dropdown on outside click
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (menuRef.current && !menuRef.current.contains(event.target)) {
+        setOpen(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
-    useEffect(() => {
-  const handleClickOutside = (event) => {
-    if (menuRef.current && !menuRef.current.contains(event.target)) {
-      setOpen(false);
-    }
-  };
-
-  document.addEventListener("mousedown", handleClickOutside);
-  return () => {
-    document.removeEventListener("mousedown", handleClickOutside);
-  };
-}, []);
-
-  const logout = () => {
-    localStorage.removeItem("token");
+  const logout = async () => {
+    await fetch(`${API_BASE}/api/auth/logout`, {
+      method: "POST",
+      credentials: "include", // ✅ clears the cookie on the server
+    });
     navigate("/login");
   };
 

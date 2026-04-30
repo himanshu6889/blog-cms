@@ -15,9 +15,7 @@ export default function Dashboard() {
   
   useEffect(() => {
   fetch(`${API_BASE}/api/posts`, {
-    headers: {
-      Authorization: `Bearer ${localStorage.getItem("token")}`,
-    },
+    credentials: "include", // ✅ use cookie-based auth
   })
     .then((res) => res.json())
     .then((data) => {

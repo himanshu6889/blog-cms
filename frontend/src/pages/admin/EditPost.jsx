@@ -9,7 +9,7 @@ export default function EditPost() {
   const { slug } = useParams();
 
   const [currentPost, setCurrentPost] = useState(null);
-  const [isFetching, setIsFetching] = useState(true); //  track fetch status separately
+  const [isFetching, setIsFetching] = useState(true);
 
   // Fetch the post
   useEffect(() => {
@@ -17,9 +17,7 @@ export default function EditPost() {
       try {
         setIsFetching(true);
         const res = await fetch(`${API_BASE}/api/posts`, {
-          headers: {
-            Authorization: `Bearer ${localStorage.getItem("token")}`,
-          },
+          credentials: "include", // ✅ use cookie-based auth
         });
 
         const data = await res.json();
@@ -41,7 +39,6 @@ export default function EditPost() {
 
   const draftKey = `draft-${slug}`;
 
-  // ✅ Form fields — start empty, populated by useEffect below once post loads
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState("");
   const [description, setDescription] = useState("");
@@ -60,7 +57,6 @@ export default function EditPost() {
   const [showSuccess, setShowSuccess] = useState(false);
   const timeoutRef = useRef(null);
 
-  // ✅ Populate form fields once currentPost is fetched
   useEffect(() => {
     if (!currentPost) return;
 
@@ -90,7 +86,6 @@ export default function EditPost() {
     );
   };
 
-  // ✅ Check for draft only after post is loaded and form is populated
   useEffect(() => {
     if (!currentPost || hasCheckedDraft) return;
     const draft = localStorage.getItem(draftKey);
@@ -106,7 +101,6 @@ export default function EditPost() {
     setHasCheckedDraft(true);
   }, [currentPost, hasCheckedDraft, draftKey]);
 
-  // Auto-save draft
   useEffect(() => {
     if (!hasCheckedDraft || showDraftPopup) return;
     const isSame =
@@ -159,15 +153,13 @@ export default function EditPost() {
         method: "PUT",
         headers: {
           "Content-Type": "application/json",
-          Authorization: `Bearer ${localStorage.getItem("token")}`,
         },
+        credentials: "include", // ✅ use cookie-based auth
         body: JSON.stringify({
-          // Fields being edited
           title,
           category,
           description,
           content,
-          // Preserve all other fields from the existing post so they aren't wiped
           slug:        currentPost.slug,
           status:      currentPost.status,
           thumbnail:   currentPost.thumbnail   || "",
@@ -210,7 +202,6 @@ export default function EditPost() {
     return "Saved";
   };
 
-  // ✅ Show spinner while loading — not "Post Not Found"
   if (isFetching) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -219,7 +210,6 @@ export default function EditPost() {
     );
   }
 
-  // ✅ Only show "not found" after fetch completes with no result
   if (!currentPost) {
     return (
       <div className="min-h-screen flex items-center justify-center">

@@ -9,15 +9,13 @@ export default function Profile() {
     bio: "",
   });
 
-  const token = localStorage.getItem("token");
-
   const saveProfile = async (nextUser) => {
     const res = await fetch(`${API_BASE}/api/users/me`, {
       method: "PUT",
       headers: {
         "Content-Type": "application/json",
-        Authorization: "Bearer " + token,
       },
+      credentials: "include", // ✅ use cookie-based auth
       body: JSON.stringify(nextUser),
     });
 
@@ -35,9 +33,7 @@ export default function Profile() {
   // FETCH PROFILE
   useEffect(() => {
     fetch(`${API_BASE}/api/users/me`, {
-      headers: {
-        Authorization: "Bearer " + token,
-      },
+      credentials: "include", // ✅ use cookie-based auth
     })
       .then((res) => res.json())
       .then((data) => setUser(data))
@@ -93,6 +89,7 @@ export default function Profile() {
                 try {
                   const res = await fetch(`${API_BASE}/api/upload`, {
                     method: "POST",
+                    credentials: "include", // ✅ use cookie-based auth
                     body: formData,
                   });
 
