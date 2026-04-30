@@ -25,7 +25,7 @@ export const updateProfile = async (req, res) => {
 
     const result = await pool.query(
       `UPDATE users 
-       SET name=$1, avatar=$2, bio=$3, updated_at=NOW()
+       SET name=$1, avatar=$2, bio=$3
        WHERE id=$4
        RETURNING id, name, email, avatar, bio`,
       [name, avatar, bio, userId]
