@@ -18,7 +18,7 @@ const upload = multer({ storage });
 
 // POST /api/upload
 router.post("/", upload.single("avatar"), (req, res) => {
-  const fileUrl = `https://blog-cms-one-puce.vercel.app/uploads/${req.file.filename}`;
+  const fileUrl = `http://blog-cms-production-f347.up.railway.app/uploads/${req.file.filename}`;
   res.json({ url: fileUrl });
 });
 
