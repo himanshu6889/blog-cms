@@ -32,7 +32,7 @@ const corsOptions = {
 };
 
 app.use(cors(corsOptions));
-app.options("*", cors(corsOptions)); // handles preflight OPTIONS requests
+app.options("/{*path}", cors(corsOptions)); // handles preflight OPTIONS requests (Express 5 compatible)
 
 app.use(express.json({ limit: "10mb" }));
 app.use(express.urlencoded({ limit: "10mb", extended: true }));
