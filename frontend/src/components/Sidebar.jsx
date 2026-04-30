@@ -19,6 +19,8 @@ export default function Sidebar({ pinned, setPinned }) {
 
   const handleLogout = async () => {
     setLoggingOut(true);
+    setHovered(false); //  Reset hover state immediately
+
     try {
       await fetch(`${API_BASE}/api/auth/logout`, {
         method: "POST",
@@ -27,7 +29,9 @@ export default function Sidebar({ pinned, setPinned }) {
     } catch (err) {
       console.error("Logout request failed:", err);
     } finally {
-      // ✅ Hard redirect — tears down the entire React tree so ProtectedRoute
+      //  Clear persisted sidebar pin state so it resets on next login
+      localStorage.removeItem("sidebarPinned");
+      //  Hard redirect — tears down the entire React tree so ProtectedRoute
       // re-mounts fresh on next visit. navigate() doesn't do this.
       window.location.replace("/login");
     }
