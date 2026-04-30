@@ -6,12 +6,12 @@ import ProfileMenu from "../components/ProfileMenu";
 export default function AdminLayout() {
   const [pinned, setPinned] = useState(false);
 
-  // ✅ No manual auth check here — ProtectedRoute handles it via HTTP-only cookie.
-  // The old localStorage/useEffect check was conflicting with cookie-based auth.
+  // No manual auth check here — ProtectedRoute handles it via HTTP-only cookie.
+  // isLoggedIn={true} is safe because AdminLayout only renders for authenticated users.
 
   return (
     <div className="min-h-screen bg-white dark:bg-slate-900 transition-colors duration-300">
-      <Sidebar pinned={pinned} setPinned={setPinned} />
+      <Sidebar pinned={pinned} setPinned={setPinned} isLoggedIn={true} />
 
       <main
         style={{ paddingLeft: pinned ? "280px" : "84px" }}

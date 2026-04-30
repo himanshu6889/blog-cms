@@ -9,7 +9,7 @@ export default function MainLayout() {
     <div className="flex min-h-screen bg-slate-50 dark:bg-slate-900 transition-colors duration-300">
 
       {/* SIDEBAR — fixed, so we use a spacer to push content */}
-      <Sidebar pinned={pinned} setPinned={setPinned} />
+      <Sidebar pinned={pinned} setPinned={setPinned} isLoggedIn={false} />
 
       {/* Spacer that mirrors the sidebar width so content doesn't go under it */}
       <div
@@ -25,4 +25,3 @@ export default function MainLayout() {
     </div>
   );
 }
-
