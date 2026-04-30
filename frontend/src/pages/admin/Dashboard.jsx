@@ -116,7 +116,7 @@ export default function Dashboard() {
           className="inline-flex items-center gap-2 bg-blue-600 hover:bg-blue-700 text-white px-5 py-2 rounded-2xl font-semibold shadow-lg hover:shadow-2xl hover:-translate-y-0.5 transition-all"
         >
           <FaPlus />
-          Create Post
+          Createee Post
         </Link>
       </div>
 
