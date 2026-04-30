@@ -1,6 +1,6 @@
 import { useEffect, useState } from "react";
 import { Navigate } from "react-router-dom";
-import API_BASE from "../../api";
+import API_BASE from "../api";
 
 const AuthRedirect = () => {
   const [status, setStatus] = useState("loading"); // "loading" | "auth" | "unauth"
