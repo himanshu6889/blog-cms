@@ -19,7 +19,10 @@ export default function Sidebar({ pinned, setPinned }) {
 
   const handleLogout = async () => {
     setLoggingOut(true);
-    setHovered(false); //  Reset hover state immediately
+
+    // ✅ Immediately collapse the sidebar visually
+    setHovered(false);
+    setPinned(false);
 
     try {
       await fetch(`${API_BASE}/api/auth/logout`, {
@@ -29,9 +32,12 @@ export default function Sidebar({ pinned, setPinned }) {
     } catch (err) {
       console.error("Logout request failed:", err);
     } finally {
-      //  Clear persisted sidebar pin state so it resets on next login
+      // ✅ Clear ALL sidebar-related keys from localStorage
       localStorage.removeItem("sidebarPinned");
-      //  Hard redirect — tears down the entire React tree so ProtectedRoute
+      localStorage.removeItem("pinned");
+      localStorage.removeItem("sidebar");
+
+      // ✅ Hard redirect — tears down the entire React tree so ProtectedRoute
       // re-mounts fresh on next visit. navigate() doesn't do this.
       window.location.replace("/login");
     }
@@ -60,7 +66,12 @@ export default function Sidebar({ pinned, setPinned }) {
           </div>
         )}
         <button
-          onClick={() => setPinned((p) => !p)}
+          onClick={() => {
+            const next = !pinned;
+            setPinned(next);
+            // ✅ Persist the pin state with a consistent key
+            localStorage.setItem("sidebarPinned", String(next));
+          }}
           title={pinned ? "Unpin sidebar" : "Pin sidebar open"}
           className={`
             ${expanded ? "ml-auto" : "mx-auto"}
