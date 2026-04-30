@@ -19,11 +19,18 @@ export default function Sidebar({ pinned, setPinned }) {
   const expanded = pinned || hovered;
 
   const handleLogout = async () => {
-    await fetch(`${API_BASE}/api/auth/logout`, {
-      method: "POST",
-      credentials: "include", // ✅ clears HTTP-only cookie on server
-    });
-    navigate("/login");
+    try {
+      await fetch(`${API_BASE}/api/auth/logout`, {
+        method: "POST",
+        credentials: "include", // clears HTTP-only cookie on server
+      });
+    } catch (err) {
+      // Even if the request fails, clear local state and redirect
+      console.error("Logout request failed:", err);
+    } finally {
+      localStorage.removeItem("token"); // ✅ clear any token remnants
+      navigate("/login", { replace: true }); // ✅ replace so back button doesn't return to admin
+    }
   };
 
   return (
@@ -66,7 +73,6 @@ export default function Sidebar({ pinned, setPinned }) {
         onMouseEnter={() => setHovered(true)}
         className="flex-1 space-y-1 overflow-y-auto overflow-x-hidden"
       >
-        {/* ✅ Always show admin nav — Sidebar is only rendered inside ProtectedRoute */}
         <SidebarItem to="/admin" icon={<FaHome />} label="Dashboard" expanded={expanded} end />
         <SidebarItem to="/admin/create-post" icon={<FaPen />} label="Create Post" expanded={expanded} />
         <SidebarItem to="/admin/posts" icon={<FaFolder />} label="All Posts" expanded={expanded} />
