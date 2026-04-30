@@ -18,7 +18,7 @@ const upload = multer({ storage });
 
 // POST /api/upload
 router.post("/", upload.single("avatar"), (req, res) => {
-  const fileUrl = `http://localhost:5000/uploads/${req.file.filename}`;
+  const fileUrl = `https://blog-cms-one-puce.vercel.app/uploads/${req.file.filename}`;
   res.json({ url: fileUrl });
 });
 
