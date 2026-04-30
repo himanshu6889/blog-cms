@@ -16,7 +16,7 @@ export default function AuthorProfile() {
     const fetchAuthor = async () => {
       try {
         setLoading(true);
-        const res = await fetch(`${API_BASE}/api/authors/${id}`);
+        const res = await fetch(`${API_BASE}/api/posts/authors/${id}`);
         const data = await res.json();
 
         if (data.error) {
