@@ -1,16 +1,16 @@
 import express from "express";
 import { signup, login, logout, getMe } from "../controllers/authController.js";
 import { verifyToken } from "../middleware/verifyToken.js";
-import { getCsrfToken, verifyCsrfToken } from "../middleware/csrfMiddleware.js"; // ✅ added verifyCsrfToken
+import { getCsrfToken } from "../middleware/csrfMiddleware.js";
 
 const router = express.Router();
 
-// signup & login stay open — no session/cookie yet so CSRF doesn't apply
+// signup, login, logout — no CSRF needed
+// logout doesn't need CSRF: being force-logged-out is harmless, and blocking
+// it with a stale/missing token would prevent the cookie from being cleared.
 router.post("/signup", signup);
 router.post("/login",  login);
-
-// logout: user is authenticated, protect it with CSRF
-router.post("/logout", verifyCsrfToken, logout); // ✅ CSRF enforced
+router.post("/logout", logout);
 
 router.get("/me",          verifyToken, getMe);
 router.get("/csrf-token",  getCsrfToken);
