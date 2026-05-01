@@ -1,4 +1,5 @@
 import { pool } from "../db.js";
+import { sanitizeHtml, sanitizeText } from "../utils/sanitize.js";
 
 // CREATE POST
 export const createPost = async (req, res) => {
@@ -16,6 +17,17 @@ export const createPost = async (req, res) => {
     edit_access,
   } = req.body;
 
+  // Sanitize before touching the DB:
+  // — plain-text fields: strip all HTML tags
+  // — content: rich HTML, strip only dangerous tags/attributes
+  const safeTitle       = sanitizeText(title);
+  const safeSlug        = sanitizeText(slug);
+  const safeCategory    = sanitizeText(category);
+  const safeThumbnail   = sanitizeText(thumbnail);
+  const safeDescription = sanitizeText(description);
+  const safeTags        = sanitizeText(tags);
+  const safeContent     = sanitizeHtml(content);
+
   try {
     const userId = req.user.id;
     const result = await pool.query(
@@ -23,7 +35,7 @@ export const createPost = async (req, res) => {
       (title, slug, category, thumbnail, description, content, tags, status, parent_post, access, edit_access, user_id, created_at)
       VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9,$10,$11,$12, NOW())
       RETURNING *`,
-      [title, slug, category, thumbnail, description, content, tags, status || 'draft', parent_post || null, access || 'Anyone', edit_access || 'Logged-in Users', userId]
+      [safeTitle, safeSlug, safeCategory, safeThumbnail, safeDescription, safeContent, safeTags, status || 'draft', parent_post || null, access || 'Anyone', edit_access || 'Logged-in Users', userId]
     );
 
     res.json(result.rows[0]);
@@ -59,6 +71,14 @@ export const updatePost = async (req, res) => {
     content, tags, status, parent_post, access, edit_access,
   } = req.body;
 
+  const safeTitle       = sanitizeText(title);
+  const safeSlug        = sanitizeText(slug);
+  const safeCategory    = sanitizeText(category);
+  const safeThumbnail   = sanitizeText(thumbnail);
+  const safeDescription = sanitizeText(description);
+  const safeTags        = sanitizeText(tags);
+  const safeContent     = sanitizeHtml(content);
+
   try {
     const result = await pool.query(
       `UPDATE posts
@@ -67,8 +87,8 @@ export const updatePost = async (req, res) => {
            edit_access=$11, updated_at=NOW()
        WHERE id=$12 AND user_id=$13
        RETURNING *`,
-      [title, slug, category, thumbnail, description,
-       content, tags, status, parent_post || null, access, edit_access,
+      [safeTitle, safeSlug, safeCategory, safeThumbnail, safeDescription,
+       safeContent, safeTags, status, parent_post || null, access, edit_access,
        id, req.user.id]
     );
 
