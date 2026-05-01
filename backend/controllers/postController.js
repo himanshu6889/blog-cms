@@ -64,7 +64,7 @@ export const updatePost = async (req, res) => {
       `UPDATE posts
        SET title=$1, slug=$2, category=$3, thumbnail=$4, description=$5,
            content=$6, tags=$7, status=$8, parent_post=$9, access=$10,
-           edit_access=$11
+           edit_access=$11, updated_at=NOW()
        WHERE id=$12 AND user_id=$13
        RETURNING *`,
       [title, slug, category, thumbnail, description,

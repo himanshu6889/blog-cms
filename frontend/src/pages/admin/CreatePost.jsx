@@ -369,59 +369,53 @@ export default function CreatePost() {
 
   useEffect(() => {
     const init = async () => {
-      // Load existing posts for parent selector
+      // Single fetch — used for both the parent selector and draft detection
+      let allPosts = [];
       try {
         const res = await fetch(`${API_BASE}/api/posts`, { credentials: "include" });
-        const data = await res.json();
-        console.log("Existing Posts API:", data);
-        setExistingPosts(Array.isArray(data) ? data : []);
+        allPosts = await res.json();
+        console.log("Posts API:", allPosts);
+        setExistingPosts(Array.isArray(allPosts) ? allPosts : []);
       } catch (err) {
         console.error("Error loading posts:", err);
         setExistingPosts([]);
       }
 
       // Check DB first for a meaningful draft, then fall back to localStorage.
-  // This prevents stale/empty drafts from showing the restore banner.
-  try {
-    const draftRes = await fetch(`${API_BASE}/api/posts`, { credentials: "include" });
-    const draftData = await draftRes.json();
-    const hasMeaningfulContent = (s) => (s || '').replace(/<[^>]*>/g, '').trim().length > 0;
-    const dbDrafts = Array.isArray(draftData)
-      ? draftData.filter((p) => {
-          if (p.status !== "draft") return false;
-          return (p.title || '').trim() || (p.description || '').trim() || hasMeaningfulContent(p.content);
-        }).sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
-      : [];
+      // This prevents stale/empty drafts from showing the restore banner.
+      const hasMeaningfulContent = (s) => (s || '').replace(/<[^>]*>/g, '').trim().length > 0;
+      const dbDrafts = Array.isArray(allPosts)
+        ? allPosts.filter((p) => {
+            if (p.status !== "draft") return false;
+            return (p.title || '').trim() || (p.description || '').trim() || hasMeaningfulContent(p.content);
+          }).sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
+        : [];
 
-    if (dbDrafts.length > 0) {
-      const latest = dbDrafts[0];
-      setDraftBanner(true);
-      setDraftTimestamp(new Date(latest.updated_at || latest.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }));
-      return; // DB draft found — skip localStorage check
-    }
-  } catch (err) {
-    console.error("Error checking DB drafts:", err);
-  }
-
-  // Fallback: check localStorage only if DB has nothing
-  const raw = localStorage.getItem(DRAFT_KEY);
-  if (raw) {
-    try {
-      const d = JSON.parse(raw);
-      const hasRealContent = (d.content || '').replace(/<[^>]*>/g, '').trim().length > 0;
-      const hasRealTitle = (d.title || '').trim().length > 0;
-      const hasRealDesc  = (d.description || '').trim().length > 0;
-      if (hasRealTitle || hasRealDesc || hasRealContent) {
+      if (dbDrafts.length > 0) {
+        const latest = dbDrafts[0];
         setDraftBanner(true);
-        setDraftTimestamp(d._savedAt || "");
-      } else {
-        // Empty draft artifact — clean it up silently
-        localStorage.removeItem(DRAFT_KEY);
+        setDraftTimestamp(new Date(latest.updated_at || latest.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }));
+        return; // DB draft found — skip localStorage check
       }
-    } catch {
-      localStorage.removeItem(DRAFT_KEY);
-    }
-  }
+
+      // Fallback: check localStorage only if DB has nothing
+      const raw = localStorage.getItem(DRAFT_KEY);
+      if (raw) {
+        try {
+          const d = JSON.parse(raw);
+          const hasRealTitle = (d.title || '').trim().length > 0;
+          const hasRealDesc  = (d.description || '').trim().length > 0;
+          const hasRealBody  = hasMeaningfulContent(d.content);
+          if (hasRealTitle || hasRealDesc || hasRealBody) {
+            setDraftBanner(true);
+            setDraftTimestamp(d._savedAt || "");
+          } else {
+            localStorage.removeItem(DRAFT_KEY);
+          }
+        } catch {
+          localStorage.removeItem(DRAFT_KEY);
+        }
+      }
     }; // end init
 
     init();
