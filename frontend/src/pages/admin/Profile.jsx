@@ -80,33 +80,23 @@ export default function Profile() {
               onChange={async (e) => {
                 const file = e.target.files[0];
                 if (!file) return;
-
-                const formData = new FormData();
-                formData.append("avatar", file);
-
+                if (file.size > 2 * 1024 * 1024) {
+                  alert("Image must be smaller than 2 MB.");
+                  return;
+                }
                 try {
-                  // ✅ was raw fetch() — authFetch auto-skips Content-Type for FormData
-                  const res = await authFetch(`${API_BASE}/api/upload`, {
-                    method: "POST",
-                    body: formData,
+                  const dataUrl = await new Promise((resolve, reject) => {
+                    const reader = new FileReader();
+                    reader.onload = () => resolve(reader.result);
+                    reader.onerror = reject;
+                    reader.readAsDataURL(file);
                   });
-
-                  const data = await res.json();
-
-                  if (!res.ok) {
-                    throw new Error(data?.message || "Avatar upload failed");
-                  }
-
-                  const nextUser = {
-                    ...user,
-                    avatar: data.url,
-                  };
-
+                  const nextUser = { ...user, avatar: dataUrl };
                   setUser(nextUser);
                   await saveProfile(nextUser);
                 } catch (err) {
-                  console.error("Upload error:", err);
-                  alert(err.message || "Avatar upload failed");
+                  console.error("Avatar error:", err);
+                  alert("Failed to process image.");
                 }
               }}
               className="w-full text-sm text-gray-500 file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700 cursor-pointer"
