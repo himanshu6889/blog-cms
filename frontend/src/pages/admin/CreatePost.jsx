@@ -367,35 +367,37 @@ export default function CreatePost() {
   const savedPostIdRef  = useRef(null);
   const savedPostSlugRef = useRef(null);
 
+  
+  const isDirtyRef = useRef(false);
+  // Skips the very first onUpdate the editor fires on mount (initial HTML emission).
+  const editorFirstUpdateRef = useRef(true);
+
   useEffect(() => {
     const init = async () => {
-      // Single fetch — used for both the parent selector and draft detection
-      let allPosts = [];
+      
       try {
         const res = await fetch(`${API_BASE}/api/posts`, { credentials: "include" });
-        allPosts = await res.json();
-        console.log("Posts API:", allPosts);
-        setExistingPosts(Array.isArray(allPosts) ? allPosts : []);
+        const data = await res.json();
+        const allPosts = Array.isArray(data) ? data : [];
+        setExistingPosts(allPosts);
+
+        const hasMeaningfulContent = (s) => (s || '').replace(/<[^>]*>/g, '').trim().length > 0;
+        const dbDrafts = allPosts
+          .filter((p) => {
+            if (p.status !== "draft") return false;
+            return (p.title || '').trim() || (p.description || '').trim() || hasMeaningfulContent(p.content);
+          })
+          .sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at));
+
+        if (dbDrafts.length > 0) {
+          const latest = dbDrafts[0];
+          setDraftBanner(true);
+          setDraftTimestamp(new Date(latest.updated_at || latest.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }));
+          return; // DB draft found — skip localStorage check
+        }
       } catch (err) {
         console.error("Error loading posts:", err);
         setExistingPosts([]);
-      }
-
-      // Check DB first for a meaningful draft, then fall back to localStorage.
-      // This prevents stale/empty drafts from showing the restore banner.
-      const hasMeaningfulContent = (s) => (s || '').replace(/<[^>]*>/g, '').trim().length > 0;
-      const dbDrafts = Array.isArray(allPosts)
-        ? allPosts.filter((p) => {
-            if (p.status !== "draft") return false;
-            return (p.title || '').trim() || (p.description || '').trim() || hasMeaningfulContent(p.content);
-          }).sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
-        : [];
-
-      if (dbDrafts.length > 0) {
-        const latest = dbDrafts[0];
-        setDraftBanner(true);
-        setDraftTimestamp(new Date(latest.updated_at || latest.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }));
-        return; // DB draft found — skip localStorage check
       }
 
       // Fallback: check localStorage only if DB has nothing
@@ -403,13 +405,14 @@ export default function CreatePost() {
       if (raw) {
         try {
           const d = JSON.parse(raw);
+          const hasRealContent = (d.content || '').replace(/<[^>]*>/g, '').trim().length > 0;
           const hasRealTitle = (d.title || '').trim().length > 0;
           const hasRealDesc  = (d.description || '').trim().length > 0;
-          const hasRealBody  = hasMeaningfulContent(d.content);
-          if (hasRealTitle || hasRealDesc || hasRealBody) {
+          if (hasRealTitle || hasRealDesc || hasRealContent) {
             setDraftBanner(true);
             setDraftTimestamp(d._savedAt || "");
           } else {
+            // Empty draft artifact — clean it up silently
             localStorage.removeItem(DRAFT_KEY);
           }
         } catch {
@@ -421,7 +424,21 @@ export default function CreatePost() {
     init();
 }, []);
 
-  const handleTitle = (e) => { const v = e.target.value; setTitle(v); setSlug(slugify(v, { lower: true, strict: true })); };
+  const handleTitle = (e) => {
+    isDirtyRef.current = true; // BUG 3 FIX
+    const v = e.target.value;
+    setTitle(v);
+    setSlug(slugify(v, { lower: true, strict: true }));
+  };
+
+  
+  const handleEditorUpdate = useCallback((html) => {
+    setContent(html);
+    if (!editorFirstUpdateRef.current) {
+      isDirtyRef.current = true;
+    }
+    editorFirstUpdateRef.current = false;
+  }, []);
   const plainContent = content.replace(/<[^>]*>/g, " ");
   const wordCount = (description + " " + plainContent).trim().split(/\s+/).filter(Boolean).length;
   const readingTime = Math.max(1, Math.ceil(wordCount / 200));
@@ -473,6 +490,15 @@ export default function CreatePost() {
       });
 
       if (!res.ok) {
+      
+        if (res.status === 404 && isUpdate) {
+          console.warn("Draft not found (404), resetting and retrying as new draft.");
+          savedPostIdRef.current   = null;
+          savedPostSlugRef.current = null;
+          setSavedPostId(null);
+          setSavedPostSlug(null);
+          return saveDraftToDB({ redirectAfter, silent });
+        }
         const err = await res.json();
         console.error("Draft error:", err);
         if (!silent) alert("Failed to save draft");
@@ -512,6 +538,9 @@ export default function CreatePost() {
 
   // Autosave: localStorage immediately (1.5 s) + DB silently (3 s)
   useEffect(() => {
+    
+    if (!isDirtyRef.current) return;
+
     const plainContent = (content || '').replace(/<[^>]*>/g, '').trim();
     if (!title && !description && !plainContent) return;
 
@@ -533,6 +562,12 @@ export default function CreatePost() {
       setEditorKey((k) => k + 1);
     }
   }, [editorInitialContent]);
+
+  // BUG 3 FIX: When the editor remounts (editorKey changes), reset the first-update flag
+  // so we skip the new editor's initial onUpdate emission as well.
+  useEffect(() => {
+    editorFirstUpdateRef.current = true;
+  }, [editorKey]);
 
   const showSuccessToast = (t, sub) => { setToastMsg({ title: t, sub }); setShowToast(true); setTimeout(() => setShowToast(false), 2500); };
   const saveDraft = () => { const at = writeDraft(); setLastSaved(at); showSuccessToast("Draft Saved", "Progress stored locally."); };
@@ -574,11 +609,14 @@ export default function CreatePost() {
         savedPostSlugRef.current = d.slug;
         setDraftBanner(false);
 
-        // Fix: set content first, then increment key in next tick so editor mounts with correct value
+       
         if (d.content) {
           setEditorInitialContent(d.content);
           setContent(d.content);
         }
+
+        
+        isDirtyRef.current = false;
 
         const savedTime = new Date(d.updated_at || d.created_at).toLocaleTimeString("en-IN", {
           hour: "2-digit", minute: "2-digit",
@@ -603,6 +641,8 @@ export default function CreatePost() {
         setEditorInitialContent(d.content);
         setContent(d.content);
       }
+      
+      isDirtyRef.current = false;
       setLastSaved(d._savedAt || ""); setDraftBanner(false);
       showSuccessToast("Draft Restored", `From ${d._savedAt || "last session"}.`);
     } catch { localStorage.removeItem(DRAFT_KEY); setDraftBanner(false); }
@@ -623,17 +663,23 @@ export default function CreatePost() {
       savedPostIdRef.current   = null;
       savedPostSlugRef.current = null;
     } else {
-      // No savedPostId in this session — find and delete the latest DB draft
+      // No savedPostId in this session — find and delete ALL DB drafts so the
+      // banner never re-appears on the next visit.
+      // BUG 2 FIX: Previously only the latest draft was deleted; older ones stayed
+      // in the DB and re-triggered the banner on the next page load.
       try {
         const res = await fetch(`${API_BASE}/api/posts`, { credentials: "include" });
         const data = await res.json();
         const dbDrafts = Array.isArray(data) ? data.filter((p) => p.status === "draft") : [];
-        if (dbDrafts.length > 0) {
-          const latest = dbDrafts.sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))[0];
-          await authFetch(`${API_BASE}/api/posts/${latest.id}`, { method: "DELETE" });
-        }
+        await Promise.all(
+          dbDrafts.map((draft) =>
+            authFetch(`${API_BASE}/api/posts/${draft.id}`, { method: "DELETE" }).catch((err) =>
+              console.error(`Failed to delete draft ${draft.id}:`, err)
+            )
+          )
+        );
       } catch (err) {
-        console.error("Failed to find/delete DB draft on discard:", err);
+        console.error("Failed to find/delete DB drafts on discard:", err);
       }
     }
   };
@@ -642,6 +688,12 @@ export default function CreatePost() {
     setTitle(""); setSlug(""); setCategory(""); setThumbnail(""); setDescription("");
     setContent(""); setTags(""); setParent("none"); setAssocGroup("none");
     setAccess(DEFAULT_ACCESS); setEditorInitialContent(""); setEditorKey((p) => p + 1); setLastSaved(""); setSavedPostId(null); setSavedPostSlug(null);
+    // BUG 1 FIX: Reset refs directly — don't rely on the async sync-effects.
+    // Without this, the next autosave fires a PUT to the OLD draft ID.
+    savedPostIdRef.current   = null;
+    savedPostSlugRef.current = null;
+    // BUG 3 FIX: Reset dirty flag so clicking/focusing fields after reset doesn't save.
+    isDirtyRef.current = false;
   };
 
     // const persistPost = () => {
@@ -804,7 +856,7 @@ const parentOptions = [
               <FaPenFancy className="text-blue-600" /> Short Description
             </div>
             <textarea
-              value={description} onChange={(e) => setDescription(e.target.value)}
+              value={description} onChange={(e) => { isDirtyRef.current = true; setDescription(e.target.value); }}
               placeholder="Write a short summary for readers..."
               className="w-full h-32 resize-none rounded-2xl border border-slate-200 dark:border-slate-600 bg-white dark:bg-slate-700 text-slate-900 dark:text-white placeholder:text-slate-400 dark:placeholder:text-slate-500 px-4 py-4 outline-none focus:border-blue-500"
             />
@@ -824,7 +876,7 @@ const parentOptions = [
               </div>
             </div>
             <div className="rounded-2xl border border-slate-200 dark:border-slate-600 overflow-hidden min-h-[460px]">
-              <Editor key={editorKey} onUpdate={setContent} initialHtml={editorInitialContent} />
+              <Editor key={editorKey} onUpdate={handleEditorUpdate} initialHtml={editorInitialContent} />
             </div>
           </div>
 
