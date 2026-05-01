@@ -14,7 +14,7 @@ let _csrfToken = null;
 // ─── Call once on app startup (main.jsx) ──────────────────────────────────────
 export async function initCsrf() {
   try {
-    const res = await fetch(`${API_BASE}/api/csrf-token`, {
+    const res = await fetch(`${API_BASE}/api/auth/csrf-token`, {
       credentials: "include",
     });
     const data = await res.json();
