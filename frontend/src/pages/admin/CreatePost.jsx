@@ -368,44 +368,63 @@ export default function CreatePost() {
   const savedPostSlugRef = useRef(null);
 
   useEffect(() => {
-    const fetchPosts = async () => {
+    const init = async () => {
+      // Load existing posts for parent selector
       try {
-        const res = await fetch(`${API_BASE}/api/posts`, {
-          credentials: "include",
-        });
+        const res = await fetch(`${API_BASE}/api/posts`, { credentials: "include" });
         const data = await res.json();
         console.log("Existing Posts API:", data);
+        setExistingPosts(Array.isArray(data) ? data : []);
+      } catch (err) {
+        console.error("Error loading posts:", err);
+        setExistingPosts([]);
+      }
 
-  //  Ensure array
+      // Check DB first for a meaningful draft, then fall back to localStorage.
+  // This prevents stale/empty drafts from showing the restore banner.
+  try {
+    const draftRes = await fetch(`${API_BASE}/api/posts`, { credentials: "include" });
+    const draftData = await draftRes.json();
+    const hasMeaningfulContent = (s) => (s || '').replace(/<[^>]*>/g, '').trim().length > 0;
+    const dbDrafts = Array.isArray(draftData)
+      ? draftData.filter((p) => {
+          if (p.status !== "draft") return false;
+          return (p.title || '').trim() || (p.description || '').trim() || hasMeaningfulContent(p.content);
+        }).sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))
+      : [];
 
-  if (Array.isArray(data)) {
-      setExistingPosts(data);
-    } else {
-      setExistingPosts([]); // fallback to avoid crash
+    if (dbDrafts.length > 0) {
+      const latest = dbDrafts[0];
+      setDraftBanner(true);
+      setDraftTimestamp(new Date(latest.updated_at || latest.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }));
+      return; // DB draft found — skip localStorage check
     }
-
   } catch (err) {
-    console.error("Error loading posts:", err);
-    setExistingPosts([]);
+    console.error("Error checking DB drafts:", err);
   }
-};
-  
-  fetchPosts();
 
-  // draft logic (keep this)
+  // Fallback: check localStorage only if DB has nothing
   const raw = localStorage.getItem(DRAFT_KEY);
   if (raw) {
     try {
       const d = JSON.parse(raw);
       const hasRealContent = (d.content || '').replace(/<[^>]*>/g, '').trim().length > 0;
-      if (d.title || d.description || hasRealContent) {
+      const hasRealTitle = (d.title || '').trim().length > 0;
+      const hasRealDesc  = (d.description || '').trim().length > 0;
+      if (hasRealTitle || hasRealDesc || hasRealContent) {
         setDraftBanner(true);
         setDraftTimestamp(d._savedAt || "");
+      } else {
+        // Empty draft artifact — clean it up silently
+        localStorage.removeItem(DRAFT_KEY);
       }
     } catch {
       localStorage.removeItem(DRAFT_KEY);
     }
   }
+    }; // end init
+
+    init();
 }, []);
 
   const handleTitle = (e) => { const v = e.target.value; setTitle(v); setSlug(slugify(v, { lower: true, strict: true })); };
@@ -427,6 +446,10 @@ export default function CreatePost() {
 
   // Core DB save — uses refs so the closure is always fresh regardless of when it fires
   const saveDraftToDB = useCallback(async ({ redirectAfter = false, silent = false } = {}) => {
+    // Don't create a DB record for truly empty content (e.g. editor default <p><br></p>)
+    const plainText = (content || '').replace(/<[^>]*>/g, '').trim();
+    if (!title.trim() && !description.trim() && !plainText) return;
+
     try {
       const isUpdate = !!savedPostIdRef.current;
       const currentSlug = isUpdate
@@ -591,7 +614,35 @@ export default function CreatePost() {
     } catch { localStorage.removeItem(DRAFT_KEY); setDraftBanner(false); }
   };
 
-  const discardDraft = () => { clearDraft(); setDraftBanner(false); };
+  const discardDraft = async () => {
+    clearDraft();
+    setDraftBanner(false);
+    // Delete the DB draft too so the banner never re-appears on next visit
+    if (savedPostIdRef.current) {
+      try {
+        await authFetch(`${API_BASE}/api/posts/${savedPostIdRef.current}`, { method: "DELETE" });
+      } catch (err) {
+        console.error("Failed to delete DB draft on discard:", err);
+      }
+      setSavedPostId(null);
+      setSavedPostSlug(null);
+      savedPostIdRef.current   = null;
+      savedPostSlugRef.current = null;
+    } else {
+      // No savedPostId in this session — find and delete the latest DB draft
+      try {
+        const res = await fetch(`${API_BASE}/api/posts`, { credentials: "include" });
+        const data = await res.json();
+        const dbDrafts = Array.isArray(data) ? data.filter((p) => p.status === "draft") : [];
+        if (dbDrafts.length > 0) {
+          const latest = dbDrafts.sort((a, b) => new Date(b.updated_at || b.created_at) - new Date(a.updated_at || a.created_at))[0];
+          await authFetch(`${API_BASE}/api/posts/${latest.id}`, { method: "DELETE" });
+        }
+      } catch (err) {
+        console.error("Failed to find/delete DB draft on discard:", err);
+      }
+    }
+  };
 
   const resetAll = () => {
     setTitle(""); setSlug(""); setCategory(""); setThumbnail(""); setDescription("");
