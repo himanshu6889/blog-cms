@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import API_BASE from "../../api"; 
+import { authFetch } from "../../utils/csrfUtils"; // ✅ added
 
 export default function Profile() {
   const [user, setUser] = useState({
@@ -10,13 +11,10 @@ export default function Profile() {
   });
 
   const saveProfile = async (nextUser) => {
-    const res = await fetch(`${API_BASE}/api/users/me`, {
+    const res = await authFetch(`${API_BASE}/api/users/me`, { // ✅ was raw fetch()
       method: "PUT",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      credentials: "include", // ✅ use cookie-based auth
       body: JSON.stringify(nextUser),
+      // authFetch sets Content-Type: application/json and X-CSRF-Token automatically
     });
 
     const data = await res.json();
@@ -30,10 +28,10 @@ export default function Profile() {
     return data;
   };
 
-  // FETCH PROFILE
+  // FETCH PROFILE — GET is safe, plain fetch is fine
   useEffect(() => {
     fetch(`${API_BASE}/api/users/me`, {
-      credentials: "include", // ✅ use cookie-based auth
+      credentials: "include",
     })
       .then((res) => res.json())
       .then((data) => setUser(data))
@@ -87,9 +85,9 @@ export default function Profile() {
                 formData.append("avatar", file);
 
                 try {
-                  const res = await fetch(`${API_BASE}/api/upload`, {
+                  // ✅ was raw fetch() — authFetch auto-skips Content-Type for FormData
+                  const res = await authFetch(`${API_BASE}/api/upload`, {
                     method: "POST",
-                    credentials: "include", // ✅ use cookie-based auth
                     body: formData,
                   });
 

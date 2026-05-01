@@ -1,6 +1,7 @@
 import { useEffect, useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import API_BASE from "../api";
+import { authFetch } from "../utils/csrfUtils"; // ✅ added
 
 export default function ProfileMenu() {
   const [user, setUser] = useState(null);
@@ -42,9 +43,8 @@ export default function ProfileMenu() {
   }, []);
 
   const logout = async () => {
-    await fetch(`${API_BASE}/api/auth/logout`, {
+    await authFetch(`${API_BASE}/api/auth/logout`, { // ✅ was raw fetch()
       method: "POST",
-      credentials: "include", // ✅ clears the cookie on the server
     });
     navigate("/login");
   };

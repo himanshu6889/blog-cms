@@ -7,6 +7,7 @@
   } from "react-icons/fa";
 
   import API_BASE from "../../api"; 
+  import { authFetch } from "../../utils/csrfUtils"; // ✅ added
 
   export default function Posts() {
     const [posts, setPosts] = useState([]);
@@ -103,15 +104,14 @@
 
     const confirmDelete = async () => {
     try {
-      // delete from backend
+      // ✅ was raw fetch() — authFetch attaches CSRF token automatically
       for (let id of deleteIds) {
-        await fetch(`${API_BASE}/api/posts/${id}`, {
+        await authFetch(`${API_BASE}/api/posts/${id}`, {
           method: "DELETE",
-          credentials: "include",
         });
       }
 
-      // refetch updated posts
+      // refetch updated posts — GET is safe, plain fetch is fine
       const res = await fetch(`${API_BASE}/api/posts`, {
         credentials: "include",
       });

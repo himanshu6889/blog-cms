@@ -25,13 +25,17 @@ export async function initCsrf() {
 }
 
 // ─── Drop-in replacement for fetch() on write operations ─────────────────────
-// Automatically attaches X-CSRF-Token header + credentials
+// Automatically attaches X-CSRF-Token header + credentials.
+// Skips Content-Type for FormData so the browser sets the multipart boundary.
 export async function authFetch(url, options = {}) {
   const method = (options.method || "GET").toUpperCase();
   const needsCsrf = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
 
+  // ✅ Don't force Content-Type for FormData — browser must set it with boundary
+  const isFormData = options.body instanceof FormData;
+
   const headers = {
-    "Content-Type": "application/json",
+    ...(isFormData ? {} : { "Content-Type": "application/json" }),
     ...(options.headers || {}),
     ...(needsCsrf && _csrfToken ? { "X-CSRF-Token": _csrfToken } : {}),
   };

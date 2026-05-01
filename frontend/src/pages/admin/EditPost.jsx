@@ -3,6 +3,7 @@ import { useEffect, useState, useRef } from "react";
 import Editor from "../../editor/Editor";
 
 import API_BASE from "../../api"; 
+import { authFetch } from "../../utils/csrfUtils"; // ✅ added
 
 export default function EditPost() {
   const navigate = useNavigate();
@@ -11,13 +12,13 @@ export default function EditPost() {
   const [currentPost, setCurrentPost] = useState(null);
   const [isFetching, setIsFetching] = useState(true);
 
-  // Fetch the post
+  // Fetch the post — GET is safe, plain fetch is fine
   useEffect(() => {
     const fetchPost = async () => {
       try {
         setIsFetching(true);
         const res = await fetch(`${API_BASE}/api/posts`, {
-          credentials: "include", // ✅ use cookie-based auth
+          credentials: "include",
         });
 
         const data = await res.json();
@@ -149,12 +150,8 @@ export default function EditPost() {
     if (!title.trim()) return;
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE}/api/posts/${currentPost.id}`, {
+      const res = await authFetch(`${API_BASE}/api/posts/${currentPost.id}`, { // ✅ was raw fetch()
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include", // ✅ use cookie-based auth
         body: JSON.stringify({
           title,
           category,

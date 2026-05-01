@@ -10,6 +10,7 @@ import {
   FaBars,
 } from "react-icons/fa";
 import API_BASE from "../api";
+import { authFetch } from "../utils/csrfUtils"; // ✅ added
 
 export default function Sidebar({ pinned, setPinned, isLoggedIn }) {
   const [hovered, setHovered] = useState(false);
@@ -25,9 +26,8 @@ export default function Sidebar({ pinned, setPinned, isLoggedIn }) {
     setPinned(false);
 
     try {
-      await fetch(`${API_BASE}/api/auth/logout`, {
+      await authFetch(`${API_BASE}/api/auth/logout`, { // ✅ was raw fetch()
         method: "POST",
-        credentials: "include",
       });
     } catch (err) {
       console.error("Logout request failed:", err);

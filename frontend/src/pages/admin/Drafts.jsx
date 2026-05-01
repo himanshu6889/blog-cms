@@ -6,6 +6,7 @@ import {
 } from "react-icons/fa";
 
 import API_BASE from "../../api";
+import { authFetch } from "../../utils/csrfUtils"; // ✅ added
 
 export default function Drafts() {
   const [drafts, setDrafts] = useState([]);
@@ -18,13 +19,13 @@ export default function Drafts() {
   const [showToast, setShowToast] = useState(false);
   const [toastMsg, setToastMsg] = useState("Deleted Successfully");
 
+  // GET is safe — plain fetch is fine
   const fetchDrafts = async () => {
     try {
       const res = await fetch(`${API_BASE}/api/posts`, {
         credentials: "include",
       });
       const data = await res.json();
-      // drafts live in the same posts table — filter by status
       setDrafts(Array.isArray(data) ? data.filter((p) => p.status === "draft") : []);
     } catch (err) {
       console.error("Error fetching drafts:", err);
@@ -124,10 +125,10 @@ export default function Drafts() {
 
   const confirmDelete = async () => {
     try {
+      // ✅ was raw fetch() — authFetch attaches CSRF token automatically
       for (let id of deleteIds) {
-        await fetch(`${API_BASE}/api/posts/${id}`, {
+        await authFetch(`${API_BASE}/api/posts/${id}`, {
           method: "DELETE",
-          credentials: "include",
         });
       }
       setSelected([]);
@@ -142,16 +143,12 @@ export default function Drafts() {
 
   const publishDraft = async (id) => {
     try {
-      // find the full draft from already-loaded state so we don't wipe content
       const draft = safeDrafts.find((d) => d.id === id);
       if (!draft) return;
 
-      const res = await fetch(`${API_BASE}/api/posts/${id}`, {
+      // ✅ was raw fetch() — authFetch attaches CSRF token automatically
+      const res = await authFetch(`${API_BASE}/api/posts/${id}`, {
         method: "PUT",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        credentials: "include",
         body: JSON.stringify({
           title:       draft.title,
           slug:        draft.slug,
