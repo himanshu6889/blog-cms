@@ -7,7 +7,7 @@ This project has evolved into a **feature-rich CMS** with authentication, admin 
 
 ---
 
-# 🚀 Current Project Status (UPDATED)
+# 🚀 Current Project Status (UPDATED: May 2026)
 
 | Feature                      | Status      |
 | ---------------------------- | ----------- |
@@ -21,82 +21,285 @@ This project has evolved into a **feature-rich CMS** with authentication, admin 
 | Author Display (Home + Blog) | ✅ Complete |
 | Route Highlight Fix          | ✅ Complete |
 | UI Improvements              | ✅ Complete |
+| Rich Text Editor (Lexical)   | ✅ Complete |
+| Image Upload & Cropping      | ✅ Complete |
+| Draft System                 | ✅ Complete |
+| Categories & Search          | ✅ Complete |
+| CSRF Protection              | ✅ Complete |
+| Docker Containerization      | ✅ Complete |
+| Theme Toggle (Dark/Light)    | ✅ Complete |
+| Responsive Design            | ✅ Complete |
 
 ---
 
-# 🆕 Latest Fixes (This Session)
+# 🏗️ Architecture
 
-## ✅ 1. Author Not Showing (FIXED)
+## Backend
+- **Node.js + Express** - REST API server
+- **PostgreSQL** - Database with Hasura GraphQL
+- **JWT Authentication** - Secure user sessions
+- **Multer** - File upload handling
+- **bcrypt** - Password hashing
+- **CSRF Protection** - Security middleware
 
-### Problem:
+## Frontend
+- **React 19** - Modern UI framework
+- **Vite** - Fast build tool
+- **TailwindCSS** - Utility-first styling
+- **Lexical** - Rich text editor
+- **React Router** - Client-side routing
+- **React Icons** - Icon library
 
-* Posts did not show author name
+## Infrastructure
+- **Docker Compose** - Container orchestration
+- **PostgreSQL 15** - Primary database
+- **Hasura** - GraphQL engine
+- **Vercel/Netlify** - Deployment ready
 
-### Solution:
+---
 
-* Added `user_id` in posts table
-* Joined users table in backend
+# 🎯 Key Features
 
-```sql
-SELECT posts.*, users.name AS author_name, users.avatar AS author_avatar
-FROM posts
-LEFT JOIN users ON posts.user_id = users.id
+## 🔐 Authentication & Security
+- User registration and login
+- JWT-based authentication
+- CSRF token protection
+- Secure password hashing
+- Session management
+
+## 📝 Content Management
+- Rich text editor with Lexical
+- Image upload with cropping
+- Thumbnail generation
+- Draft saving
+- Post categories and tags
+- SEO-friendly slugs
+
+## 👤 User Profiles
+- Avatar upload
+- Bio and profile information
+- Author pages
+- Profile editing
+
+## 🌐 Public Website
+- Responsive blog layout
+- Category filtering
+- Search functionality
+- Author attribution
+- Reading time estimates
+- Dark/light theme toggle
+
+## 🛠️ Admin Dashboard
+- Post management (CRUD)
+- Draft management
+- User profile management
+- Content analytics
+
+---
+
+# 🚀 Getting Started
+
+## Prerequisites
+- Docker and Docker Compose
+- Node.js 18+
+- npm or yarn
+
+## Quick Start
+
+1. **Clone the repository**
+   ```bash
+   git clone <repository-url>
+   cd blog-cms
+   ```
+
+2. **Start the services**
+   ```bash
+   docker-compose up -d
+   ```
+
+3. **Install dependencies**
+   ```bash
+   # Backend
+   cd backend
+   npm install
+
+   # Frontend
+   cd ../frontend
+   npm install
+   ```
+
+4. **Setup database**
+   ```bash
+   # Run the SQL setup script
+   docker exec -i blog-postgres psql -U postgres -d blogcms < backend/sql_queries/first.sql
+   ```
+
+5. **Start development servers**
+   ```bash
+   # Backend (from backend directory)
+   npm run dev
+
+   # Frontend (from frontend directory)
+   npm run dev
+   ```
+
+6. **Access the application**
+   - Frontend: http://localhost:5173
+   - Backend API: http://localhost:5000
+   - Hasura Console: http://localhost:8080
+
+---
+
+# 📁 Project Structure
+
+```
+blog-cms/
+├── backend/
+│   ├── controllers/     # Route handlers
+│   ├── middleware/      # Auth, CSRF, validation
+│   ├── routes/          # API endpoints
+│   ├── sql_queries/     # Database setup
+│   ├── uploads/         # File storage
+│   └── utils/           # Helper functions
+├── frontend/
+│   ├── public/          # Static assets
+│   ├── src/
+│   │   ├── api.js       # API configuration
+│   │   ├── components/  # Reusable UI components
+│   │   ├── editor/      # Rich text editor
+│   │   ├── layouts/     # Page layouts
+│   │   ├── pages/       # Route components
+│   │   └── utils/       # Frontend utilities
+│   └── vercel.json      # Deployment config
+└── docker-compose.yml   # Container setup
 ```
 
 ---
 
-## ✅ 2. Author Display in UI (FIXED)
+# 🔧 API Endpoints
 
-### Updated:
+## Authentication
+- `POST /api/auth/signup` - User registration
+- `POST /api/auth/login` - User login
+- `POST /api/auth/logout` - User logout
+- `GET /api/auth/me` - Get current user
 
-* `Home.jsx` → shows author in cards
-* `BlogDetails.jsx` → shows author below date
+## Posts
+- `GET /api/posts/public` - Get public posts
+- `GET /api/posts/:slug` - Get post by slug
+- `POST /api/posts` - Create post
+- `PUT /api/posts/:id` - Update post
+- `DELETE /api/posts/:id` - Delete post
 
-### Result:
+## Users
+- `GET /api/users/me` - Get user profile
+- `PUT /api/users/me` - Update profile
 
-* 👤 Author name visible
-* 🔤 Avatar fallback (first letter)
-
----
-
-## ✅ 3. Blog Page Missing Author (FIXED)
-
-### Problem:
-
-* Blog page (`/blog/:slug`) didn’t show author
-
-### Fix:
-
-* Updated `getPostBySlug` API with JOIN
-* Added author UI in BlogDetails page
+## Upload
+- `POST /api/upload` - Upload files
 
 ---
 
-## ✅ 4. Sidebar "View Website" Not Highlighting (FIXED)
+# 🎨 UI Components
 
-### Problem:
+## Rich Text Editor
+- Lexical-based WYSIWYG editor
+- Image insertion
+- Lists and formatting
+- Markdown shortcuts
 
-* Used `button` instead of `NavLink`
+## Image Management
+- Drag & drop upload
+- Thumbnail cropping
+- Automatic resizing
+- File validation
 
-### Fix:
+## Responsive Design
+- Mobile-first approach
+- TailwindCSS styling
+- Dark/light theme support
+- Accessible components
 
-* Replaced with:
+---
 
-```jsx
-<SidebarItem to="/" ... />
+# 🔒 Security Features
+
+- **JWT Authentication** - Stateless token-based auth
+- **CSRF Protection** - Cross-site request forgery prevention
+- **Input Sanitization** - DOMPurify for HTML content
+- **Password Hashing** - bcrypt with salt rounds
+- **CORS Configuration** - Proper origin validation
+- **File Upload Security** - Type and size validation
+
+---
+
+# 🚀 Deployment
+
+## Vercel (Frontend)
+```bash
+npm run build
+# Deploy to Vercel with vercel.json config
 ```
 
-* Added support for:
-
-```js
-location.pathname.startsWith("/blog")
+## Netlify (Frontend)
+```bash
+npm run build
+# Deploy with _redirects for SPA routing
 ```
 
-### Result:
+## Docker (Full Stack)
+```bash
+docker-compose up -d
+# Includes PostgreSQL, Hasura, and Node.js services
+```
 
-* Sidebar now highlights correctly on:
-  * `/`
-  * `/blog/:slug`
+---
+
+# 🆕 Recent Updates
+
+## ✅ Latest Features Added
+- **Rich Text Editor**: Full Lexical integration with toolbar
+- **Image Cropping**: Advanced thumbnail cropping interface
+- **Author System**: Complete author profiles and attribution
+- **Draft Management**: Auto-save and draft restoration
+- **Theme Toggle**: Dark/light mode with persistence
+- **CSRF Protection**: Enhanced security middleware
+- **Docker Setup**: Complete containerization with Hasura
+
+## 🔧 Technical Improvements
+- **Performance**: Optimized queries with proper indexing
+- **UX**: Improved loading states and error handling
+- **SEO**: Meta tags and structured data
+- **Accessibility**: ARIA labels and keyboard navigation
+- **Mobile**: Responsive design across all devices
+
+---
+
+# 📈 Future Roadmap
+
+- [ ] Comment system
+- [ ] Social sharing
+- [ ] Analytics dashboard
+- [ ] Multi-language support
+- [ ] API documentation
+- [ ] Email notifications
+- [ ] Backup system
+
+---
+
+# 🤝 Contributing
+
+1. Fork the repository
+2. Create a feature branch
+3. Make your changes
+4. Add tests if applicable
+5. Submit a pull request
+
+---
+
+# 📄 License
+
+This project is licensed under the MIT License - see the LICENSE file for details.
 
 ---
 
