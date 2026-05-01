@@ -395,12 +395,16 @@ export default function CreatePost() {
           setDraftTimestamp(new Date(latest.updated_at || latest.created_at).toLocaleTimeString("en-IN", { hour: "2-digit", minute: "2-digit" }));
           return; // DB draft found — skip localStorage check
         }
+
+        // DB has no drafts — localStorage may be stale, clear it so the banner never re-appears
+        localStorage.removeItem(DRAFT_KEY);
+        return;
       } catch (err) {
         console.error("Error loading posts:", err);
         setExistingPosts([]);
       }
 
-      // Fallback: check localStorage only if DB has nothing
+      // Fallback: check localStorage only if the DB fetch itself failed
       const raw = localStorage.getItem(DRAFT_KEY);
       if (raw) {
         try {
