@@ -31,7 +31,7 @@ export async function authFetch(url, options = {}) {
   const method = (options.method || "GET").toUpperCase();
   const needsCsrf = ["POST", "PUT", "PATCH", "DELETE"].includes(method);
 
-  // ✅ Don't force Content-Type for FormData — browser must set it with boundary
+  // Don't force Content-Type for FormData — browser must set it with boundary
   const isFormData = options.body instanceof FormData;
 
   const headers = {
@@ -46,12 +46,18 @@ export async function authFetch(url, options = {}) {
     credentials: "include", // always send HttpOnly cookie
   });
 
-  // If server says token is expired, silently refresh and retry once
+  // If the CSRF token is rejected for any reason (expired, invalid, missing —
+  // e.g. server restarted and wiped its in-memory token store), silently fetch
+  // a fresh token and retry the request once.
   if (res.status === 403) {
     const body = await res.clone().json().catch(() => ({}));
-    if (body.error?.includes("expired")) {
+    const isCsrfError =
+      body.error?.includes("expired") ||
+      body.error?.includes("Invalid CSRF") ||
+      body.error?.includes("CSRF token missing");
+    if (isCsrfError) {
       await initCsrf();
-      return authFetch(url, options); // retry with fresh token
+      return authFetch(url, options); // retry once with fresh token
     }
   }
 
